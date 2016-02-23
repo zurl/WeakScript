@@ -16,6 +16,6 @@ $Fact
 
 :RULE
 $Unit
-| %num @ Num 0 @
-| %LP $Sum %RP @ num 0 @
+| %num @ * NUMBER int ReadinToken1.name @
+| %LP $Sum %RP @ # @
 :RULEEND

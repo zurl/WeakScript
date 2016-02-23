@@ -63,6 +63,53 @@ void createNewNode(string name, int base) {
 	app(head, "    }",0);
 	app(head, "};",0);
 }
+void createNewUnitNode(string name,string type) {
+	app(head, "class " + name + "Node : public UnitNode {", 0);
+	app(head, "public:", 0);
+	app(head, "    string value;", 0);
+	app(head, "    " + name + "Node(string _value)", 0);
+	app(head, "	       :UnitNode() {}", 0);
+	app(head, "    virtual void visit(int x) {", 0);
+	app(head, "        for (int i = 1; i <= x; i++)printf("    ");", 0);
+	app(head, "        cout << \"" + name + " Node\ :  << value << endl;", 0);
+	app(head, "        this->visitson(x + 1);", 0);
+	app(head, "    }", 0);
+	app(head, "};", 0);
+}
+void outputEnd(vector<string> data,int deep) {
+	if (data[0] == "#") {
+		//pass
+	}
+	else if (data[0] == "*") {
+		//root
+		string nodename = data[1], nodetype = data[2];
+		if (nodehash.find(nodename) == nodehash.end()) {
+			//new;
+			createNewUnitNode(nodename, nodetype);
+		}
+
+		if (nodename != "#")
+			app(body, "root = new " + nodename + "Node(" + data[3] + ");", deep + 1);
+	}
+	else {
+		//normal
+		string nodename = data[0];
+		int nodenum = data[1][0] - '0';
+		if (nodehash.find(nodename) == nodehash.end()) {
+			//new;
+			createNewNode(nodename, nodenum);
+		}
+		int flag = 0;
+		string tstr = "";
+		for (int i = 1; i <= nodenum; i++) {
+			if (flag == 0)flag = 1;
+			else tstr += ",";
+			tstr += data[i + 1];
+		}
+		if (nodename != "#")
+			app(body, "root = new " + nodename + "Node(" + tstr + ");", deep + 1);
+	}
+}
 string itos(int a) {
 	std::ostringstream os;
 	os << a;
@@ -76,6 +123,7 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 			app(body, "while (flag) {", deep);
 			app(body, "flag = 0;", deep + 1);
 			dfs(k->t, rhashtable, datas, e, accept, deep + 1, 1);
+			app(body, "return 1;", deep + 1);
 			app(body, "}", deep);
 			continue;
 		}
@@ -89,23 +137,14 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 
 			dfs(k->t, rhashtable, datas, e, accept, deep + 1, isCir);
 
-			if (accept[k->v]) {
+			if (accept[k->v] != -1) {
 				//create new nod;
 				auto t = datas[accept[k->v]];
-				string nodename = t[0];
-				int nodenum = t[1][0] - '0';
-				if (nodehash.find(nodename) == nodehash.end()) {
-					//new;
-					createNewNode(nodename, nodenum);
+				outputEnd(t, deep);
+				if (!isCir)app(body, "return 1;", deep +1);
+				else {
+					app(body, "flag = 1", deep +1); app(body, "continue;", deep +1);
 				}
-				int flag = 0;
-				string tstr = "";
-				for (int i = 1; i <= nodenum; i++) {
-					if (flag == 0)flag = 1;
-					else tstr += ",";
-					tstr += t[i + 1];
-				}
-				app(body, "root = new "+ nodename+"Node("+tstr+");",deep+1);
 			}
 			app(body, "}", deep);
 			app(body, "else{", deep);
@@ -119,23 +158,14 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 
 			dfs(k->t, rhashtable, datas, e, accept, deep + 1, isCir);
 
-			if (accept[k->v]) {
+			if (accept[k->v] != -1) {
 				//create new nod;
 				auto t = datas[k->v];
-				string nodename = t[0];
-				int nodenum = t[1][0] - '0';
-				if (nodehash.find(nodename) == nodehash.end()) {
-					//new;
-					createNewNode(nodename, nodenum);
+				outputEnd(t, deep);
+				if (!isCir)app(body, "return 1;", deep +1);
+				else {
+					app(body, "flag = 1", deep +1); app(body, "continue;", deep +1);
 				}
-				int flag = 0;
-				string tstr = "";
-				for (int i = 1; i <= nodenum; i++) {
-					if (flag == 0)flag = 1;
-					else tstr += ",";
-					tstr += t[i + 1];
-				}
-				app(body, "root = new " + nodename + "Node(" + tstr + ");", deep + 1);
 			}
 			app(body, "}", deep);
 			app(body, "else{", deep);
@@ -148,6 +178,7 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 bool dealrule() {
 	//input
 	int now = 0;
+	int empty = 0;
 	map<int, string> rhashtable;
 	map<string, int> hashtable;
 	vector<vector<int>> names;
@@ -158,6 +189,9 @@ bool dealrule() {
 	cin >> rulename; rulename = getBackStr(rulename);
 	while (cin >> temp) {
 		if (temp == ":RULEEND")break;
+		if (temp == ":EMPTY") {
+			empty = 1; continue;
+		}
 		if (temp != "|") {
 			cout << "error" << endl;
 			//error
@@ -195,7 +229,7 @@ bool dealrule() {
 	//input end;
 	//init
 	int nowedge = 0;
-	for (int i = 0; i <= 900; i++)e[i] = nullptr, accept[i] = 0;
+	for (int i = 0; i <= 900; i++)e[i] = nullptr, accept[i] = -1;
 	//create graph
 	for (int i = 0; i < names.size(); i++) {
 		int scannow = 0;
@@ -223,6 +257,8 @@ bool dealrule() {
 	app(declr, "bool parse" + rulename + "();", 0);
 	app(body, "bool parse" + rulename + "(){", 0);
 	dfs( 0, rhashtable, datas, e, accept, 1, 0);
+	if(empty)app(body, "return 1", 1);
+	else app(body, "return 0", 1);
 	app(body, "}", 0);
 }
 void work() {

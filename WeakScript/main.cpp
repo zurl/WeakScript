@@ -62,118 +62,140 @@ public:
 		delete right;
 	}
 };
-Lex lex("test.ws"); //bug
+Lex lex("test.ws");
 Node *root;
 void refresh() {
 	if (root == nullptr)return;
-		root->del();
+	root->del();
 	delete root;
 	root = 0;
-}  //bug
+};
 class SubNode : public BinaryNode {
 public:
-	SubNode(Node *a, Node *b)
-		:BinaryNode(a, b) {}
+	SubNode(a, b)
+		:BinaryNode(Node *a, Node *b) {}
 	virtual void visit(int x) {
-		for (int i = 1; i <= x; i++)printf("    ");
+		for (int i = 1; i <= x; i++)printf();
 		cout << "Sub Node" << endl;
 		this->visitson(x + 1);
 	}
 };
-class AddNode : public BinaryNode {
+class SubNode : public BinaryNode {
 public:
-	AddNode(Node *a, Node *b)
-		:BinaryNode(a, b) {}
+	SubNode(a, b)
+		:BinaryNode(Node *a, Node *b) {}
 	virtual void visit(int x) {
-		for (int i = 1; i <= x; i++)printf("    ");
-		cout << "Add Node" << endl;
+		for (int i = 1; i <= x; i++)printf();
+		cout << "Sub Node" << endl;
+		this->visitson(x + 1);
+	}
+};
+class SubNode : public BinaryNode {
+public:
+	SubNode(a, b)
+		:BinaryNode(Node *a, Node *b) {}
+	virtual void visit(int x) {
+		for (int i = 1; i <= x; i++)printf();
+		cout << "Sub Node" << endl;
 		this->visitson(x + 1);
 	}
 };
 class DivNode : public BinaryNode {
 public:
-	DivNode(Node *a, Node *b)
-		:BinaryNode(a, b) {}
+	DivNode(a, b)
+		:BinaryNode(Node *a, Node *b) {}
 	virtual void visit(int x) {
-		for (int i = 1; i <= x; i++)printf("    ");
+		for (int i = 1; i <= x; i++)printf();
 		cout << "Div Node" << endl;
 		this->visitson(x + 1);
 	}
 };
-class MulNode : public BinaryNode {
+class DivNode : public BinaryNode {
 public:
-	MulNode(Node *a, Node *b)
-		:BinaryNode(a, b) {}
+	DivNode(a, b)
+		:BinaryNode(Node *a, Node *b) {}
 	virtual void visit(int x) {
-		for (int i = 1; i <= x; i++)printf("    ");
-		cout << "Mul Node" << endl;
+		for (int i = 1; i <= x; i++)printf();
+		cout << "Div Node" << endl;
 		this->visitson(x + 1);
 	}
 };
-class NumNode : public Node {
-private:
-	string num;
+class DivNode : public BinaryNode {
 public:
-	NumNode(string _num)
-		:num(_num){}
+	DivNode(a, b)
+		:BinaryNode(Node *a, Node *b) {}
 	virtual void visit(int x) {
-		for (int i = 1; i <= x; i++)printf("    ");
-		cout << "Num Node :"<< num << endl;
-	}
-	virtual void del() {
-		
+		for (int i = 1; i <= x; i++)printf();
+		cout << "Div Node" << endl;
+		this->visitson(x + 1);
 	}
 };
+class numNode : public UnitNode {
+public:
+	string value;
+	numNode(string _value)
+		:UnitNode() {}
+	virtual void visit(int x) {
+		for (int i = 1; i <= x; i++)printf();
+		cout << "num Node :  << value << endl;
+			this->visitson(x + 1);
+	}
+};
+
+bool parseSum();
 bool parseFact();
-bool parseUnit(); //bug;	
+bool parseUnit();
+
 bool parseSum() {
 	auto savedRoot1 = root;
 	if (parseFact()) {
 		int flag = 1;
 		while (flag) {
 			flag = 0;
-			auto SavedLexPos2 = lex.getNowPos();
-			auto ReadinToken2 = lex.readNextToken();
-			if (ReadinToken2.id == LEX_SUB) {
-				auto savedRoot3 = root;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_SUB) {
+				auto savedRoot4 = root;
 				if (parseFact()) {
-					root = new SubNode(savedRoot3, root);
-					flag = 1;
-					continue;
+					root = new SubNode(savedRoot4, root);
+					flag = 1
+						continue;
 				}
 				else {
 					refresh();
-					root = savedRoot3;
+					root = savedRoot4;
 				}
 			}
 			else {
-				lex.setNowPos(SavedLexPos2);
+				lex.setNowPos(SavedLexPos3);
 			}
-			SavedLexPos2 = lex.getNowPos();
-			ReadinToken2 = lex.readNextToken();
-			if (ReadinToken2.id == LEX_ADD) {
-				auto savedRoot3 = root;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_ADD) {
+				auto savedRoot4 = root;
 				if (parseFact()) {
-					root = new AddNode(savedRoot3, root);
-					flag = 1;
-					continue;
+					root = new SubNode(savedRoot4, root);
+					flag = 1
+						continue;
 				}
 				else {
 					refresh();
-					root = savedRoot3;
+					root = savedRoot4;
 				}
 			}
 			else {
-				lex.setNowPos(SavedLexPos2);
+				lex.setNowPos(SavedLexPos3);
 			}
+			return 1;
 		}
+		root = new SubNode(savedRoot4, root);
 		return 1;
 	}
 	else {
 		refresh();
-		root = savedRoot1;	
+		root = savedRoot1;
 	}
-	return 0;
+	return 0
 }
 bool parseFact() {
 	auto savedRoot1 = root;
@@ -181,48 +203,50 @@ bool parseFact() {
 		int flag = 1;
 		while (flag) {
 			flag = 0;
-			auto SavedLexPos2 = lex.getNowPos();
-			auto ReadinToken2 = lex.readNextToken();
-			if (ReadinToken2.id == LEX_DIV) {
-				auto savedRoot3 = root;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_DIV) {
+				auto savedRoot4 = root;
 				if (parseUnit()) {
-					root = new DivNode(savedRoot3, root);
-					flag = 1;
-					continue;
+					root = new DivNode(savedRoot4, root);
+					flag = 1
+						continue;
 				}
 				else {
 					refresh();
-					root = savedRoot3;
+					root = savedRoot4;
 				}
 			}
 			else {
-				lex.setNowPos(SavedLexPos2);
+				lex.setNowPos(SavedLexPos3);
 			}
-			SavedLexPos2 = lex.getNowPos();
-			ReadinToken2 = lex.readNextToken();
-			if (ReadinToken2.id == LEX_MUL) {
-				auto savedRoot3 = root;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_MUL) {
+				auto savedRoot4 = root;
 				if (parseUnit()) {
-					root = new MulNode(savedRoot3, root);
-					flag = 1;
-					continue;
+					root = new DivNode(savedRoot4, root);
+					flag = 1
+						continue;
 				}
 				else {
 					refresh();
-					root = savedRoot3;
+					root = savedRoot4;
 				}
 			}
 			else {
-				lex.setNowPos(SavedLexPos2);
+				lex.setNowPos(SavedLexPos3);
 			}
+			return 1;
 		}
+		root = new DivNode(savedRoot4, root);
 		return 1;
 	}
 	else {
 		refresh();
 		root = savedRoot1;
 	}
-	return 0;
+	return 0
 }
 bool parseUnit() {
 	auto SavedLexPos1 = lex.getNowPos();
@@ -246,19 +270,19 @@ bool parseUnit() {
 	}
 	else {
 		lex.setNowPos(SavedLexPos1);
-		//bug
 	}
-	SavedLexPos1 = lex.getNowPos();
-	ReadinToken1 = lex.readNextToken();
+	auto SavedLexPos1 = lex.getNowPos();
+	auto ReadinToken1 = lex.readNextToken();
 	if (ReadinToken1.id == LEX_NUMBER) {
-		root = new NumNode(ReadinToken1.name);
+		root = new numNode(ReadinToken1.name);
 		return 1;
 	}
 	else {
 		lex.setNowPos(SavedLexPos1);
 	}
-	return 0;
+	return 0
 }
+
 int main() {
 	if (parseSum()) {
 		root->visit(0);
@@ -269,3 +293,4 @@ int main() {
 	//	out(lex.readNextToken());
 	return 0;
 }
+

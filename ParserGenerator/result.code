@@ -1,4 +1,4 @@
-	#include<iostream>
+#include<iostream>
 #include"WeakScriptLex.h"
 #include<string>
 #include "lex.h"
@@ -132,11 +132,12 @@ public:
 };
 class numNode : public UnitNode {
 public:
-    numNode()
+    string value;
+    numNode(string _value)
 	       :UnitNode() {}
     virtual void visit(int x) {
         for (int i = 1; i <= x; i++)printf();
-        cout << "num Node" << endl;
+        cout << "num Node :  << value << endl;
         this->visitson(x + 1);
     }
 };
@@ -157,6 +158,8 @@ bool parseSum(){
                 auto savedRoot4 = root;
                 if (parseFact()) {
                     root = new SubNode(savedRoot4,root);
+                    flag = 1
+                    continue;
                 }
                 else{
                     refresh();
@@ -172,6 +175,8 @@ bool parseSum(){
                 auto savedRoot4 = root;
                 if (parseFact()) {
                     root = new SubNode(savedRoot4,root);
+                    flag = 1
+                    continue;
                 }
                 else{
                     refresh();
@@ -181,13 +186,16 @@ bool parseSum(){
             else{
                 lex.setNowPos(SavedLexPos3);
             }
+            return 1;
         }
         root = new SubNode(savedRoot4,root);
+        return 1;
     }
     else{
         refresh();
         root = savedRoot1;
     }
+    return 0
 }
 bool parseFact(){
     auto savedRoot1 = root;
@@ -201,6 +209,8 @@ bool parseFact(){
                 auto savedRoot4 = root;
                 if (parseUnit()) {
                     root = new DivNode(savedRoot4,root);
+                    flag = 1
+                    continue;
                 }
                 else{
                     refresh();
@@ -216,6 +226,8 @@ bool parseFact(){
                 auto savedRoot4 = root;
                 if (parseUnit()) {
                     root = new DivNode(savedRoot4,root);
+                    flag = 1
+                    continue;
                 }
                 else{
                     refresh();
@@ -225,13 +237,16 @@ bool parseFact(){
             else{
                 lex.setNowPos(SavedLexPos3);
             }
+            return 1;
         }
         root = new DivNode(savedRoot4,root);
+        return 1;
     }
     else{
         refresh();
         root = savedRoot1;
     }
+    return 0
 }
 bool parseUnit(){
     auto SavedLexPos1 = lex.getNowPos(); 
@@ -242,7 +257,7 @@ bool parseUnit(){
             auto SavedLexPos3 = lex.getNowPos(); 
             auto ReadinToken3 = lex.readNextToken();
             if (ReadinToken3.id == LEX_RP) {
-                root = new numNode();
+                return 1;
             }
             else{
                 lex.setNowPos(SavedLexPos3);
@@ -259,10 +274,13 @@ bool parseUnit(){
     auto SavedLexPos1 = lex.getNowPos(); 
     auto ReadinToken1 = lex.readNextToken();
     if (ReadinToken1.id == LEX_num) {
+        root = new numNode(ReadinToken1.name);
+        return 1;
     }
     else{
         lex.setNowPos(SavedLexPos1);
     }
+    return 0
 }
 
 int main() {
