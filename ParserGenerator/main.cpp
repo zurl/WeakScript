@@ -133,6 +133,7 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 				for (int i = 1; i <= nodenum; i++) {
 					if (flag == 0)flag = 1;
 					else tstr += ",";
+					tstr += t[i + 1];
 				}
 				app(body, "root = new " + nodename + "Node(" + tstr + ");", deep + 1);
 			}
@@ -141,7 +142,6 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 			app(body, "refresh();", deep + 1);
 			app(body, "root = savedRoot" + itos(deep) + ";", deep + 1);
 			app(body, "}", deep);
-
 		}
 	}
 }
@@ -207,8 +207,8 @@ bool dealrule() {
 				if (k->v == names[i][j]) {
 					//found;
 					scannow = k->t;
-					break;
 					flag = 1;
+					break;
 				}
 			}
 			if (flag == 0) {
