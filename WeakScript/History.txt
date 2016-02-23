@@ -1,0 +1,34 @@
+2016.2.23
+fucking		
+2016.2.20
+Refactor starting
+
+2016.2.18
+Refactor Preparation
+
+New Ws Language::
+WeakType-RunningAnalysisTree-InterpretationLanguage-WithGC
+C++/C/Java?
+No Java (too high level)
+C ? Great!but slow slow slow
+C++ ?My Choice
+
+var a = 6;
+var p = 8;
+#.a = 10;
+#.root.c
+
+#WS 0.1.4
+2016.1.20 CHECKOUT
+
+
+#WS 0.1.3
+init Parser
+#WS 0.1.0
+Complete Lex
+#WS 0.0.5
+ADD lexgenertor
+#WS 0.0.2
+ADD LEX
+#WS 0.0.1
+finish regular engine

@@ -1,0 +1,72 @@
+#include<iostream>
+#include"WeakScriptLex.h"
+#include<string>
+#include "lex.h"
+using namespace std;
+class Node{
+public:
+    virtual void visit(int x) = 0;
+    virtual void del() = 0;
+};
+class UnitNode : public Node{
+public:
+    UnitNode(){}
+    void visitson(int x){}
+    virtual void del(){}
+};
+class UnaryNode : public Node{
+    Node *son;
+public:
+    UnaryNode(Node *_s)
+    :son(_s){}
+    void visitson(int x){
+        son->visit(x);
+    }
+    virtual void del(){
+        son->del();
+        delete son;
+    }
+};
+class BinaryNode : public Node{
+    Node *left, *right;
+public:
+    BinaryNode(Node *_l, Node *_r)
+    :left(_l), right(_r){}
+    void visitson(int x){
+        left->visit(x);
+        right->visit(x);
+    }
+    virtual void del(){
+        left->del();
+        right->del();
+        delete left;
+        delete right;
+    }
+};
+class TernaryNode : public Node{
+    Node *left, *mid,*right;
+public:
+    TernaryNode(Node *_l,Node *_m, Node *_r)
+    :left(_l),mid(_m), right(_r){}
+    void visitson(int x){
+        left->visit(x);
+        mid->visit(x);
+        right->visit(x);
+    }
+    virtual void del(){
+        left->del();
+        mid->del();
+        right->del();
+        delete left;
+        delete mid;
+        delete right;
+    }
+};
+Lex lex("test.ws");
+Node *root;
+void refresh(){
+    if (root == nullptr)return;
+    root->del();
+    delete root;
+    root = 0;
+};

@@ -1,0 +1,21 @@
+# test grammer file
+
+
+:RULE
+$Sum
+| $Fact * %ADD $Fact @ Add 2 savedRoot4 root @
+| $Fact * %SUB $Fact @ Sub 2 savedRoot4 root @ 
+:RULEEND
+
+:RULE
+$Fact
+| $Unit * %MUL $Unit @ Mul 2 savedRoot4 root @
+| $Unit * %DIV $Unit @ Div 2 savedRoot4 root @ 
+| $Unit @ # @
+:RULEEND
+
+:RULE
+$Unit
+| %num @ Num 0 @
+| %LP $Sum %RP @ # @
+:RULEEND
