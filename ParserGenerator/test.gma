@@ -17,5 +17,5 @@ $Fact
 :RULE
 $Unit
 | %num @ Num 0 @
-| %LP $Sum %RP @ # @
+| %LP $Sum %RP @ num 0 @
 :RULEEND
