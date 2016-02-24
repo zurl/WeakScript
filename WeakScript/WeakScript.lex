@@ -1,5 +1,5 @@
 #WeakScript Lexical Analysis Engine
-#Version 1.1
+#Version 1.1 beta
 #Powered By zurl
 
 #The Definations are as following:
@@ -17,6 +17,7 @@
 #Version 1.2 Stable
 
 @DEF SLT a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z
+@DEF NNN 1|2|3|4|5|6|7|8|9|0
 
 @RULE
 
@@ -62,10 +63,16 @@ GT >
 NGT <=
 LT <
 NLT >=
+AND &&
+OR ||
+REV ~
+NOT !
 
 #value
 
-NUMBER -?\d+(.\d+)?
+INT -?(NNN)+
+REAL -?(NNN)+.(NNN)+
+
 STRING "\a*"
 
 

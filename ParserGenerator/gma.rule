@@ -1,0 +1,52 @@
+WeakScript 0.0.5 GMA DEF:
+
+Types:
+Real64/Integer64/String/Boolean
+
+Operator:
+Arithmatical: +-*/% ( + - )
+Logicial: || &&¡¡!
+Bit: | & ^ ~
+Compare == != < > <= >=   
+
+Cond:
+if else while for break continue
+
+func:
+
+func helloworld(a,b){
+	
+} 
+
+
+GMA RULE;
+
+Stmts := stmt | stmt Stmts
+stmt := stmtson
+Stmtson :=  LValue = Expr; 
+		| Expr;
+		| ;
+		| var ID;
+		| { stmts }
+		| if ( Expr ) stmt else stmt 
+		| while ( Expr ) stmt 
+		| break ;
+		| continue ;
+openstmt := if ( Expr ) stmt else openstmt ;
+          | if ( Expr ) stmt
+Expr := AndExpr [ || AndExpr ]
+AndExpr := CompExpr [ && CompExpr ]
+CompExpr :=  Sum [ == Sum ]
+			|Sum [ != Sum ]
+			|Sum [ >= Sum ]
+			|Sum [ <= Sum ]
+			|Sum [ >  Sum ]
+			|Sum [ <  Sum ]
+Sum :=		 Fact [ + Fact ] 
+			|Fact [ - Fact ]  
+Fact :=		 ValueGroup [ * ValueGroup ] 
+			|ValueGroup [ / ValueGroup ] 
+			|ValueGroup [ % ValueGroup ] 
+ValueGroup : Value | -Value | !Value | ~Value | ( Expr )
+Value :=	NUMBER | STRING | ID
+LValue := ID

@@ -113,6 +113,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="gma.rule" />
     <None Include="result.code" />
     <None Include="tail.code" />
     <None Include="test.gma" />

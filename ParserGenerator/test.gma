@@ -1,21 +1,76 @@
 # test grammer file
 
+:RULE
+$Stmts
+| $Stmt $Stmts							@ Stmts 2 SavedRoot2 root @
+| $Stmt									@ # @
+:RULEEND
 
 :RULE
-$Sum
-| $Fact * %ADD $Fact @ Add 2 savedRoot4 root @
-| $Fact * %SUB $Fact @ Sub 2 savedRoot4 root @ 
+$Stmt
+| $LValue %ASSIGN $Expr %SEMI			@ Assign 2 SavedRoot3 root @
+| $Expr %SEMI							@ # @
+| %SEMI									@ # @
+| %VAR %ID %SEMI						@ * Declr string ReadinToken2.name @
+| %LCB $Stmts %RCB						@ # @
+| %IF %LP $Expr %RP $Stmt %ELSE $Stmt	@ IfElse 3 SavedRoot4 SavedRoot6 root @
+| %IF %LP $Expr %RP $Stmt				@ If 2 SavedRoot4 root @
+| %WHILE %LP $Expr %RP $Stmt			@ While 2 SavedRoot4 root @
+| %BREAK %SEMI							@ Break 0 @
+| %CONTINUE %SEMI						@ Continue 0 @
+:RULEEND
+
+:RULE
+$Expr 
+| $AndExpr * %OR $AndExpr				@ Or  2 SavedRoot4 root @
+:RULEEND
+
+:RULE
+$AndExpr
+| $CompExpr * %AND $CompExpr			@ And  2 SavedRoot4 root @
+:RULEEND
+
+:RULE
+$CompExpr
+| $Sum * %EQ  $Sum						@ Eq  2 SavedRoot4 root @
+| $Sum * %NEQ $Sum						@ Neq 2 SavedRoot4 root @
+| $Sum * %GT  $Sum						@ Gt  2 SavedRoot4 root @
+| $Sum * %LT  $Sum						@ Lt  2 SavedRoot4 root @
+| $Sum * %NGT $Sum						@ Ngt 2 SavedRoot4 root @
+| $Sum * %NLT $Sum						@ Nlt 2 SavedRoot4 root @
+:RULEEND
+
+:RULE
+$Sum 
+| $Fact * %ADD $Fact					@ Add 2 SavedRoot4 root @
+| $Fact * %SUB $Fact					@ Sub 2 SavedRoot4 root @
 :RULEEND
 
 :RULE
 $Fact
-| $Unit * %MUL $Unit @ Mul 2 savedRoot4 root @
-| $Unit * %DIV $Unit @ Div 2 savedRoot4 root @ 
-| $Unit @ # @
+| $ValueGroup * %MUL $ValueGroup		@ Mul 2 SavedRoot4 root @
+| $ValueGroup * %DIV $ValueGroup		@ Div 2 SavedRoot4 root @
+| $ValueGroup * %MOD $ValueGroup		@ Mod 2 SavedRoot4 root @
 :RULEEND
 
 :RULE
-$Unit
-| %num @ * NUMBER int ReadinToken1.name @
-| %LP $Sum %RP @ # @
+$ValueGroup 
+| $Value								@ # @
+| %SUB $Value							@ Neg 1 root @
+| %NOT $Value							@ Not 1 root @
+| %REV $Value							@ Rev 1 root @
+| %LP $Expr %RP							@ # @
+:RULEEND
+
+:RULE
+$Value 
+| %INT									@ * int string ReadinToken1.name @
+| %REAL									@ * real string ReadinToken1.name @
+| %STRING								@ * str string ReadinToken1.name @
+| %ID									@ * ID string ReadinToken1.name @
+:RULEEND
+
+:RULE
+$LValue 
+| %ID									@ * ID string ReadinToken1.name @
 :RULEEND

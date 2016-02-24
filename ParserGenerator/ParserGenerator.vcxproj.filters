@@ -34,6 +34,9 @@
     <None Include="result.code">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="gma.rule">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="header.code">

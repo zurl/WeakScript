@@ -37,7 +37,7 @@ void app(string &x, string y, int tabs) {
 const int MAX = 1000;
 
 set<string> nodehash;
-string nodeWords[5] = {"Unit", "Unary", "Binary","Tr"};
+string nodeWords[5] = {"Unit", "Unary", "Binary","Ternary"};
 void createNewNode(string name, int base) {
 	string baseName = nodeWords[base];
 	string tstr1 = "",tstr2="";
@@ -47,17 +47,17 @@ void createNewNode(string name, int base) {
 			flag = 1;
 		}
 		else tstr1 += ',', tstr2 += ',';
-		tstr1 += "Node *";
+		tstr1 += "shared_ptr<Node> ";
 		tstr1 += char('a' + i - 1);
 		tstr2 += char('a' + i - 1);
 	}
 
 	app(head, "class "+name+"Node : public " + baseName + "Node {",0);
 	app(head, "public:",0);
-	app(head, "    " + name + "Node(" + tstr2 + ")",0);
-	app(head, "	       :" + baseName + "Node("+tstr1+") {}",0);
+	app(head, "    " + name + "Node(" + tstr1 + ")",0);
+	app(head, "	       :" + baseName + "Node("+tstr2+") {}",0);
 	app(head, "    virtual void visit(int x) {",0);
-	app(head, "        for (int i = 1; i <= x; i++)printf("    ");",0);
+	app(head, "        for (int i = 1; i <= x; i++)printf(\"    \");",0);
 	app(head, "        cout << \"" + name + " Node\" << endl;",0);
 	app(head, "        this->visitson(x + 1);",0);
 	app(head, "    }",0);
@@ -68,10 +68,10 @@ void createNewUnitNode(string name,string type) {
 	app(head, "public:", 0);
 	app(head, "    string value;", 0);
 	app(head, "    " + name + "Node(string _value)", 0);
-	app(head, "	       :UnitNode() {}", 0);
+	app(head, "	       :UnitNode() {value = _value;}", 0);
 	app(head, "    virtual void visit(int x) {", 0);
-	app(head, "        for (int i = 1; i <= x; i++)printf("    ");", 0);
-	app(head, "        cout << \"" + name + " Node\ :  << value << endl;", 0);
+	app(head, "        for (int i = 1; i <= x; i++)printf(\"    \");", 0);
+	app(head, "        cout << \"" + name + " Node :\"  << value << endl;", 0);
 	app(head, "        this->visitson(x + 1);", 0);
 	app(head, "    }", 0);
 	app(head, "};", 0);
@@ -86,10 +86,12 @@ void outputEnd(vector<string> data,int deep) {
 		if (nodehash.find(nodename) == nodehash.end()) {
 			//new;
 			createNewUnitNode(nodename, nodetype);
+
+			nodehash.emplace(nodename);
 		}
 
 		if (nodename != "#")
-			app(body, "root = new " + nodename + "Node(" + data[3] + ");", deep + 1);
+			app(body, "root = shared_ptr<Node> (new " + nodename + "Node(" + data[3] + "));", deep + 1);
 	}
 	else {
 		//normal
@@ -98,6 +100,7 @@ void outputEnd(vector<string> data,int deep) {
 		if (nodehash.find(nodename) == nodehash.end()) {
 			//new;
 			createNewNode(nodename, nodenum);
+			nodehash.emplace(nodename);
 		}
 		int flag = 0;
 		string tstr = "";
@@ -107,7 +110,7 @@ void outputEnd(vector<string> data,int deep) {
 			tstr += data[i + 1];
 		}
 		if (nodename != "#")
-			app(body, "root = new " + nodename + "Node(" + tstr + ");", deep + 1);
+			app(body, "root = shared_ptr<Node> (new " + nodename + "Node(" + tstr + "));", deep + 1);
 	}
 }
 string itos(int a) {
@@ -116,6 +119,7 @@ string itos(int a) {
 	return os.str();
 }
 void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge *e[MAX], int accept[], int deep, int isCir) {
+	int newVarFlag1 = 0,newVarFlag2 = 0;
 	for (edge *k = e[x]; k != nullptr; k = k->prev) {
 		if (k->v == -1) {
 			//*
@@ -128,50 +132,78 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 			continue;
 		}
 		string name = rhashtable[k->v];
+		
 		if (name[0] == '%') {
 			//non - terminal;
-
-			app(body, "auto SavedLexPos" + itos(deep) + " = lex.getNowPos(); ", deep);
-			app(body, "auto ReadinToken" + itos(deep) + " = lex.readNextToken();", deep);
+			string keystr1 = "";
+			if (newVarFlag1 == 0) {
+				newVarFlag1 = 1;
+				keystr1 = "auto ";
+			}
+			string keystr2 = "";
+			if (newVarFlag2 == 0) {
+				newVarFlag2 = 1;
+				keystr2 = "auto ";
+			}
+			app(body, keystr2 + "SavedLexPos" + itos(deep) + " = lex.getNowPos(); ", deep);
+			app(body, keystr2 + "SavedRoot" + itos(deep) + " = root;", deep);
+			app(body, keystr1 + "ReadinToken" + itos(deep) + " = lex.readNextToken();", deep);
 			app(body, "if (ReadinToken" + itos(deep) + ".id == LEX_" + getBackStr(name) + ") {", deep);
 
 			dfs(k->t, rhashtable, datas, e, accept, deep + 1, isCir);
 
-			if (accept[k->v] != -1) {
+			if (accept[k->t] != -1) {
 				//create new nod;
-				auto t = datas[accept[k->v]];
+				auto t = datas[accept[k->t]];
 				outputEnd(t, deep);
 				if (!isCir)app(body, "return 1;", deep +1);
 				else {
 					app(body, "flag = 1", deep +1); app(body, "continue;", deep +1);
 				}
 			}
+			//app(body, "}", deep);
+			//app(body, "else{", deep);
+			//app(body, "lex.setNowPos(SavedLexPos" + itos(deep) + ");", deep + 1);
+			//app(body, "}", deep);
 			app(body, "}", deep);
-			app(body, "else{", deep);
-			app(body, "lex.setNowPos(SavedLexPos" + itos(deep) + ");", deep + 1);
-			app(body, "}", deep);
+			//app(body, "else{", deep);
+			app(body, "lex.setNowPos(SavedLexPos" + itos(deep) + ");", deep);
+			app(body, "root = SavedRoot" + itos(deep) + ";", deep);
+			//app(body, "}", deep);
 		}
 		else {
+			string keystr2 = "";
+			if (newVarFlag2 == 0) {
+				newVarFlag2 = 1;
+				keystr2 = "auto ";
+			}
 			//terminal
-			app(body, "auto savedRoot" + itos(deep) + " = root;", deep);
+			app(body, keystr2 + "SavedLexPos" + itos(deep) + " = lex.getNowPos(); ", deep);
+			app(body, keystr2 + "SavedRoot" + itos(deep) + " = root;", deep);
 			app(body, "if (parse" + getBackStr(name) + "()) {", deep);
 
 			dfs(k->t, rhashtable, datas, e, accept, deep + 1, isCir);
 
-			if (accept[k->v] != -1) {
+			if (accept[k->t] != -1) {
 				//create new nod;
-				auto t = datas[k->v];
+				auto t = datas[accept[k->t]];
 				outputEnd(t, deep);
 				if (!isCir)app(body, "return 1;", deep +1);
 				else {
-					app(body, "flag = 1", deep +1); app(body, "continue;", deep +1);
+					app(body, "flag = 1;", deep + 1);
+					app(body, "continue;", deep +1);
 				}
 			}
 			app(body, "}", deep);
-			app(body, "else{", deep);
-			app(body, "refresh();", deep + 1);
-			app(body, "root = savedRoot" + itos(deep) + ";", deep + 1);
-			app(body, "}", deep);
+			//app(body, "else{", deep);
+			//app(body, "refresh();", deep + 1);
+			//app(body, "root = SavedRoot" + itos(deep) + ";", deep + 1);
+			//app(body, "}", deep);
+
+			app(body, "refresh();", deep );
+			app(body, "lex.setNowPos(SavedLexPos" + itos(deep) + ");", deep);
+			app(body, "root = SavedRoot" + itos(deep) + ";", deep );
+			//app(body, "}", deep);
 		}
 	}
 }
@@ -235,7 +267,7 @@ bool dealrule() {
 		int scannow = 0;
 		for (int j = 0; j < names[i].size(); j++) {
 			//add edge;
-			if (j == names[i].size() - 1)accept[names[i][j]] = i;
+			
 			int flag = 0;
 			for (edge * k = e[scannow]; k != nullptr; k = k->prev) {
 				if (k->v == names[i][j]) {
@@ -251,14 +283,15 @@ bool dealrule() {
 				e[scannow] = new edge(++nowedge, names[i][j], e[scannow]);
 				scannow = nowedge;
 			}
+			if (j == names[i].size() - 1)accept[scannow] = i;
 		}
 	}
 	//create graph end
 	app(declr, "bool parse" + rulename + "();", 0);
 	app(body, "bool parse" + rulename + "(){", 0);
 	dfs( 0, rhashtable, datas, e, accept, 1, 0);
-	if(empty)app(body, "return 1", 1);
-	else app(body, "return 0", 1);
+	if (empty)app(body, "return 1;", 1);
+	else app(body, "return 0;", 1);
 	app(body, "}", 0);
 }
 void work() {

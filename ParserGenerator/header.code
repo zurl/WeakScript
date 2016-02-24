@@ -1,72 +1,68 @@
 #include<iostream>
 #include"WeakScriptLex.h"
 #include<string>
+#include<memory>
 #include "lex.h"
 using namespace std;
-class Node{
+class Node {
 public:
-    virtual void visit(int x) = 0;
-    virtual void del() = 0;
+	virtual void visit(int x) = 0;
+	virtual void del() = 0;
+	virtual 
 };
-class UnitNode : public Node{
+class UnitNode : public Node {
 public:
-    UnitNode(){}
-    void visitson(int x){}
-    virtual void del(){}
+	UnitNode() {}
+	void visitson(int x) {}
+	virtual void del() {}
 };
-class UnaryNode : public Node{
-    Node *son;
+class UnaryNode : public Node {
+	shared_ptr<Node> son;
 public:
-    UnaryNode(Node *_s)
-    :son(_s){}
-    void visitson(int x){
-        son->visit(x);
-    }
-    virtual void del(){
-        son->del();
-        delete son;
-    }
+	UnaryNode(shared_ptr<Node>  _s)
+		:son(_s) {}
+	void visitson(int x) {
+		son->visit(x);
+	}
+	virtual void del() {
+		son->del();
+	}
 };
-class BinaryNode : public Node{
-    Node *left, *right;
+class BinaryNode : public Node {
+	shared_ptr<Node> left, right;
 public:
-    BinaryNode(Node *_l, Node *_r)
-    :left(_l), right(_r){}
-    void visitson(int x){
-        left->visit(x);
-        right->visit(x);
-    }
-    virtual void del(){
-        left->del();
-        right->del();
-        delete left;
-        delete right;
-    }
+	BinaryNode(shared_ptr<Node>  _l, shared_ptr<Node>  _r)
+		:left(_l), right(_r) {}
+	void visitson(int x) {
+		left->visit(x);
+		right->visit(x);
+	}
+	virtual void del() {
+		left->del();
+		right->del();
+	}
 };
-class TernaryNode : public Node{
-    Node *left, *mid,*right;
+class TernaryNode : public Node {
+	shared_ptr<Node> left, mid, right;
 public:
-    TernaryNode(Node *_l,Node *_m, Node *_r)
-    :left(_l),mid(_m), right(_r){}
-    void visitson(int x){
-        left->visit(x);
-        mid->visit(x);
-        right->visit(x);
-    }
-    virtual void del(){
-        left->del();
-        mid->del();
-        right->del();
-        delete left;
-        delete mid;
-        delete right;
-    }
+	TernaryNode(shared_ptr<Node> _l, shared_ptr<Node> _m, shared_ptr<Node> _r)
+		:left(_l), mid(_m), right(_r) {}
+	void visitson(int x) {
+		left->visit(x);
+		mid->visit(x);
+		right->visit(x);
+	}
+	virtual void del() {
+		left->del();
+		mid->del();
+		right->del();
+	}
 };
+
 Lex lex("test.ws");
-Node *root;
-void refresh(){
-    if (root == nullptr)return;
-    root->del();
-    delete root;
-    root = 0;
+shared_ptr<Node>  root = nullptr;
+void refresh() {
+	if (root == nullptr)return;
+	root->del();
+	root = nullptr;
 };
