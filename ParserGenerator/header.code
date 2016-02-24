@@ -1,68 +1,175 @@
-#include<iostream>
-#include"WeakScriptLex.h"
-#include<string>
-#include<memory>
-#include "lex.h"
-using namespace std;
-class Node {
-public:
-	virtual void visit(int x) = 0;
-	virtual void del() = 0;
-	virtual 
-};
-class UnitNode : public Node {
-public:
-	UnitNode() {}
-	void visitson(int x) {}
-	virtual void del() {}
-};
-class UnaryNode : public Node {
-	shared_ptr<Node> son;
-public:
-	UnaryNode(shared_ptr<Node>  _s)
-		:son(_s) {}
-	void visitson(int x) {
-		son->visit(x);
-	}
-	virtual void del() {
-		son->del();
-	}
-};
-class BinaryNode : public Node {
-	shared_ptr<Node> left, right;
-public:
-	BinaryNode(shared_ptr<Node>  _l, shared_ptr<Node>  _r)
-		:left(_l), right(_r) {}
-	void visitson(int x) {
-		left->visit(x);
-		right->visit(x);
-	}
-	virtual void del() {
-		left->del();
-		right->del();
-	}
-};
-class TernaryNode : public Node {
-	shared_ptr<Node> left, mid, right;
-public:
-	TernaryNode(shared_ptr<Node> _l, shared_ptr<Node> _m, shared_ptr<Node> _r)
-		:left(_l), mid(_m), right(_r) {}
-	void visitson(int x) {
-		left->visit(x);
-		mid->visit(x);
-		right->visit(x);
-	}
-	virtual void del() {
-		left->del();
-		mid->del();
-		right->del();
-	}
-};
-
+#include "parser.h"
 Lex lex("test.ws");
 shared_ptr<Node>  root = nullptr;
+UnitNode::UnitNode() {}
+void UnitNode::visitson(int x) {}
+void UnitNode::del() {}
+
+UnaryNode::UnaryNode(shared_ptr<Node> _s)
+	:son(_s) {}
+void UnaryNode::visitson(int x) {
+	son->visit(x);
+}
+void UnaryNode::del() {
+	son->del();
+}
+
+BinaryNode::BinaryNode(shared_ptr<Node> _l, shared_ptr<Node> _r)
+	:left(_l), right(_r) {}
+void BinaryNode::visitson(int x) {
+	left->visit(x);
+	right->visit(x);
+}
+void BinaryNode::del() {
+	left->del();
+	right->del();
+}
+
+TernaryNode::TernaryNode(shared_ptr<Node> _l, shared_ptr<Node>  _m, shared_ptr<Node>  _r)
+	:left(_l), mid(_m), right(_r) {}
+void TernaryNode::visitson(int x) {
+	left->visit(x);
+	mid->visit(x);
+	right->visit(x);
+}
+void TernaryNode::del() {
+	left->del();
+	mid->del();
+	right->del();
+}
+Value::Value() {
+	if (type == Type::Str)
+		delete data.Str;
+	type = Type::Null;
+}
+Value::Value(const string &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	this->type = Type::Str;
+	this->data.Str = new string(t);
+}
+Value::Value(const long long &t) {
+	if (type == Type::Str)
+		delete data.Str;
+
+	this->type = Type::Int;
+	this->data.Int = t;
+}
+Value::Value(const double &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	this->type = Type::Real;
+	this->data.Real = t;
+}
+Value::Value(const Value &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	switch (t.type) {
+	case Type::Int:
+		this->type = Type::Int;
+		this->data.Int = t.data.Int;
+		break;
+	case Type::Real:
+		this->type = Type::Real;
+		this->data.Real = t.data.Real;
+		break;
+	case Type::Str:
+		this->type = Type::Str;
+		this->data.Str = new string(*t.data.Str);
+		break;
+	case Type::Null:
+		this->type = Type::Null;
+		break;
+	}
+}
+Value::~Value() {
+	if (type == Type::Str)
+		delete data.Str;
+	type = Type::Null;
+}
+Value & Value::operator= (const Value & t) {
+	if (type == Type::Str)
+		delete data.Str;
+	switch (t.type) {
+	case Type::Int:
+		this->type = Type::Int;
+		this->data.Int = t.data.Int;
+		break;
+	case Type::Real:
+		this->type = Type::Real;
+		this->data.Real = t.data.Real;
+		break;
+	case Type::Str:
+		this->type = Type::Str;
+		this->data.Str = new string(*t.data.Str);
+		break;
+	case Type::Null:
+		this->type = Type::Null;
+		break;
+	}
+	return *this;
+}
+ostream& operator << (ostream &o, const Value& a){
+	switch (a.type) {
+		case Value::Type::Int:
+			cout<<a.data.Int;
+			break;
+		case Value::Type::Real:
+			cout<<a.data.Real;
+			break;
+		case Value::Type::Str:
+			cout<<*a.data.Str;
+			break;
+		case Value::Type::Null:	
+			cout<<"Null";
+			break;
+		}
+		return o;
+}
+
+
+ValueNode::ValueNode(string _value)
+	:val(_value),UnitNode() {
+}
+	ValueNode::ValueNode(double _value)
+	:val(_value),UnitNode() {
+}
+ValueNode::ValueNode(long long _value)
+	:val(_value),UnitNode() {
+}
+void ValueNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	switch (val.type) {
+	case Value::Type::Int:
+		cout<<"INT VALUE:";
+		break;
+	case Value::Type::Real:
+		cout<<"REAL VALUE:";
+		break;
+	case Value:: Type::Str:
+		cout<<"STR VALUE:";
+		break;
+	case Value:: Type::Null:
+		cout<<"NULL VALUE:";
+		break;
+	}
+	cout << val << endl;
+	this->visitson(x + 1);
+}
 void refresh() {
 	if (root == nullptr)return;
 	root->del();
 	root = nullptr;
 };
+double _stod(string x) {
+	istringstream is(x);
+	double ret;
+	is >> ret;
+	return ret;
+}
+long long _stoi(string x) {
+	istringstream is(x);
+	long long ret;
+	is >> ret;
+	return ret;
+}

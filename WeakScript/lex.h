@@ -1,10 +1,4 @@
-#include<string>
-#include<iostream>
-#include<fstream>
-#include<map>
-#include<vector>
-#include<list>
-using namespace std;
+#include "common.h"
 class Lex;
 class Reg{
 public:

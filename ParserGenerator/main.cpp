@@ -35,7 +35,7 @@ void app(string &x, string y, int tabs) {
 	x += y + "\n";
 }
 const int MAX = 1000;
-
+string headfile = "";
 set<string> nodehash;
 string nodeWords[5] = {"Unit", "Unary", "Binary","Ternary"};
 void createNewNode(string name, int base) {
@@ -52,29 +52,42 @@ void createNewNode(string name, int base) {
 		tstr2 += char('a' + i - 1);
 	}
 
-	app(head, "class "+name+"Node : public " + baseName + "Node {",0);
-	app(head, "public:",0);
-	app(head, "    " + name + "Node(" + tstr1 + ")",0);
-	app(head, "	       :" + baseName + "Node("+tstr2+") {}",0);
-	app(head, "    virtual void visit(int x) {",0);
-	app(head, "        for (int i = 1; i <= x; i++)printf(\"    \");",0);
-	app(head, "        cout << \"" + name + " Node\" << endl;",0);
-	app(head, "        this->visitson(x + 1);",0);
-	app(head, "    }",0);
-	app(head, "};",0);
+	app(headfile, "class "+name+"Node : public " + baseName + "Node {",0);
+	app(headfile, "public:",0);
+	app(headfile, "    " + name + "Node(" + tstr1 + ");", 0);
+
+	app(head, "    " + name + "Node::" + name + "Node(" + tstr1 + ")", 0);
+	app(head, "	       :" + baseName + "Node(" + tstr2 + ") {}", 0);
+
+	app(headfile, "    virtual void visit(int x) ;", 0);
+	app(head, "void " + name + "Node::visit(int x) {",0);
+	app(head, "    for (int i = 1; i <= x; i++)printf(\"    \");",0);
+	app(head, "    cout << \"" + name + " Node\" << endl;",0);
+	app(head, "    this->visitson(x + 1);",0);
+	app(head, "}", 0);
+	app(headfile, "    virtual Value eval() ;", 0);
+	app(headfile, "};",0);
 }
 void createNewUnitNode(string name,string type) {
-	app(head, "class " + name + "Node : public UnitNode {", 0);
-	app(head, "public:", 0);
-	app(head, "    string value;", 0);
-	app(head, "    " + name + "Node(string _value)", 0);
-	app(head, "	       :UnitNode() {value = _value;}", 0);
-	app(head, "    virtual void visit(int x) {", 0);
-	app(head, "        for (int i = 1; i <= x; i++)printf(\"    \");", 0);
-	app(head, "        cout << \"" + name + " Node :\"  << value << endl;", 0);
-	app(head, "        this->visitson(x + 1);", 0);
-	app(head, "    }", 0);
-	app(head, "};", 0);
+	app(headfile, "class " + name + "Node : public UnitNode {", 0);
+	app(headfile, "public:", 0);
+	app(headfile, "    string value;", 0);
+	app(headfile, "    " + name + "Node(string _value);", 0);
+
+	app(head, "" + name + "Node::" + name + "Node(string _value)", 0);
+	app(head, "	   :UnitNode() {value = _value;}", 0);
+
+
+	app(headfile, "    virtual void visit(int x) ;", 0);
+	app(headfile, "    virtual Value eval() ;", 0);
+	app(headfile, "};", 0);
+
+	app(head, "void " + name + "Node::visit(int x) {", 0);
+	app(head, "    for (int i = 1; i <= x; i++)printf(\"    \");", 0);
+	app(head, "    cout << \"" + name + " Node :\"  << value << endl;", 0);
+	app(head, "    this->visitson(x + 1);", 0);
+	app(head, "}", 0);
+
 }
 void outputEnd(vector<string> data,int deep) {
 	if (data[0] == "#") {
@@ -301,7 +314,12 @@ void work() {
 	}
 }
 int main() {
+	nodehash.emplace("Value");
+
 	char c;
+	freopen("headerfile.code", "r", stdin);
+	while ((c = getchar()) != EOF)headfile += c;
+	fclose(stdin);
 	freopen("header.code", "r", stdin);
 	while ((c = getchar()) != EOF)head += c;
 	fclose(stdin);
@@ -317,5 +335,13 @@ int main() {
 	cout << declr << endl;
 	cout << body << endl;
 	cout << tail << endl;
+	fclose(stdout);
+
+	app(headfile, "#endif // !PARSER_H", 0);
+	freopen("result.header.code", "w", stdout);
+	cout << headfile << endl;
+
+	fclose(stdout);
+
 	return 0;
 }

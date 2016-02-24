@@ -1,355 +1,352 @@
-#include<iostream>
-#include"WeakScriptLex.h"
-#include<string>
-#include<memory>
-#include "lex.h"
-using namespace std;
-class Node {
-public:
-	virtual void visit(int x) = 0;
-	virtual void del() = 0;
-	virtual 
-};
-class UnitNode : public Node {
-public:
-	UnitNode() {}
-	void visitson(int x) {}
-	virtual void del() {}
-};
-class UnaryNode : public Node {
-	shared_ptr<Node> son;
-public:
-	UnaryNode(shared_ptr<Node>  _s)
-		:son(_s) {}
-	void visitson(int x) {
-		son->visit(x);
-	}
-	virtual void del() {
-		son->del();
-	}
-};
-class BinaryNode : public Node {
-	shared_ptr<Node> left, right;
-public:
-	BinaryNode(shared_ptr<Node>  _l, shared_ptr<Node>  _r)
-		:left(_l), right(_r) {}
-	void visitson(int x) {
-		left->visit(x);
-		right->visit(x);
-	}
-	virtual void del() {
-		left->del();
-		right->del();
-	}
-};
-class TernaryNode : public Node {
-	shared_ptr<Node> left, mid, right;
-public:
-	TernaryNode(shared_ptr<Node> _l, shared_ptr<Node> _m, shared_ptr<Node> _r)
-		:left(_l), mid(_m), right(_r) {}
-	void visitson(int x) {
-		left->visit(x);
-		mid->visit(x);
-		right->visit(x);
-	}
-	virtual void del() {
-		left->del();
-		mid->del();
-		right->del();
-	}
-};
-
+#include "parser.h"
 Lex lex("test.ws");
 shared_ptr<Node>  root = nullptr;
+UnitNode::UnitNode() {}
+void UnitNode::visitson(int x) {}
+void UnitNode::del() {}
+
+UnaryNode::UnaryNode(shared_ptr<Node> _s)
+	:son(_s) {}
+void UnaryNode::visitson(int x) {
+	son->visit(x);
+}
+UnaryNode::void del() {
+	son->del();
+}
+
+BinaryNode::BinaryNode(shared_ptr<Node> _l, shared_ptr<Node> _r)
+	:left(_l), right(_r) {}
+void BinaryNode::visitson(int x) {
+	left->visit(x);
+	right->visit(x);
+}
+void BinaryNode::del() {
+	left->del();
+	right->del();
+}
+
+TernaryNode::TernaryNode(shared_ptr<Node> _l, shared_ptr<Node>  _m, shared_ptr<Node>  _r)
+	:left(_l), mid(_m), right(_r) {}
+void TernaryNode::visitson(int x) {
+	left->visit(x);
+	mid->visit(x);
+	right->visit(x);
+}
+void TernaryNode::del() {
+	left->del();
+	mid->del();
+	right->del();
+}
+Value::Value() {
+	if (type == Type::Str)
+		delete data.Str;
+	type = Type::Null;
+}
+Value::Value(const string &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	this->type = Type::Str;
+	this->data.Str = new string(t);
+}
+Value::Value(const long long &t) {
+	if (type == Type::Str)
+		delete data.Str;
+
+	this->type = Type::Int;
+	this->data.Int = t;
+}
+Value::Value(const double &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	this->type = Type::Real;
+	this->data.Real = t;
+}
+Value::Value(const Value &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	switch (t.type) {
+	case Type::Int:
+		this->type = Type::Int;
+		this->data.Int = t.data.Int;
+		break;
+	case Type::Real:
+		this->type = Type::Real;
+		this->data.Real = t.data.Real;
+		break;
+	case Type::Str:
+		this->type = Type::Str;
+		this->data.Str = new string(*t.data.Str);
+		break;
+	case Type::Null:
+		this->type = Type::Null;
+		break;
+	}
+}
+Value::~Value() {
+	if (type == Type::Str)
+		delete data.Str;
+	type = Type::Null;
+}
+Value & Value::operator= (const Value & t) {
+	if (type == Type::Str)
+		delete data.Str;
+	switch (t.type) {
+	case Type::Int:
+		this->type = Type::Int;
+		this->data.Int = t.data.Int;
+		break;
+	case Type::Real:
+		this->type = Type::Real;
+		this->data.Real = t.data.Real;
+		break;
+	case Type::Str:
+		this->type = Type::Str;
+		this->data.Str = new string(*t.data.Str);
+		break;
+	case Type::Null:
+		this->type = Type::Null;
+		break;
+	}
+	return *this;
+}
+ostream& operator << (ostream &o, const Value& a){
+	switch (a.type) {
+		case Value::Type::Int:
+			cout<<a.data.Int;
+			break;
+		case Value::Type::Real:
+			cout<<a.data.Real;
+			break;
+		case Value::Type::Str:
+			cout<<*a.data.Str;
+			break;
+		case Value::Type::Null:	
+			cout<<"Null";
+			break;
+		}
+		return o;
+}
+
+
+ValueNode::ValueNode(string _value)
+	:val(_value),UnitNode() {
+}
+	ValueNode::ValueNode(double _value)
+	:val(_value),UnitNode() {
+}
+ValueNode::ValueNode(long long _value)
+	:val(_value),UnitNode() {
+}
+void ValueNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	switch (val.type) {
+	case Value::Type::Int:
+		cout<<"INT VALUE:";
+		break;
+	case Value::Type::Real:
+		cout<<"REAL VALUE:";
+		break;
+	case Value:: Type::Str:
+		cout<<"STR VALUE:";
+		break;
+	case Value:: Type::Null:
+		cout<<"NULL VALUE:";
+		break;
+	}
+	cout << val << endl;
+	this->visitson(x + 1);
+}
 void refresh() {
 	if (root == nullptr)return;
 	root->del();
 	root = nullptr;
-};class StmtsNode : public BinaryNode {
-public:
-    StmtsNode(shared_ptr<Node> a,shared_ptr<Node> b)
+};
+double _stod(string x) {
+	istringstream is(x);
+	double ret;
+	is >> ret;
+	return ret;
+}
+long long _stoi(string x) {
+	istringstream is(x);
+	long long ret;
+	is >> ret;
+	return ret;
+}    StmtsNode::StmtsNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Stmts Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class ContinueNode : public UnitNode {
-public:
-    ContinueNode()
+void StmtsNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Stmts Node" << endl;
+    this->visitson(x + 1);
+}
+    ContinueNode::ContinueNode()
 	       :UnitNode() {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Continue Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class BreakNode : public UnitNode {
-public:
-    BreakNode()
+void ContinueNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Continue Node" << endl;
+    this->visitson(x + 1);
+}
+    BreakNode::BreakNode()
 	       :UnitNode() {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Break Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class WhileNode : public BinaryNode {
-public:
-    WhileNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void BreakNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Break Node" << endl;
+    this->visitson(x + 1);
+}
+    WhileNode::WhileNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "While Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class IfElseNode : public TernaryNode {
-public:
-    IfElseNode(shared_ptr<Node> a,shared_ptr<Node> b,shared_ptr<Node> c)
+void WhileNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "While Node" << endl;
+    this->visitson(x + 1);
+}
+    IfElseNode::IfElseNode(shared_ptr<Node> a,shared_ptr<Node> b,shared_ptr<Node> c)
 	       :TernaryNode(a,b,c) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "IfElse Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class IfNode : public BinaryNode {
-public:
-    IfNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void IfElseNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "IfElse Node" << endl;
+    this->visitson(x + 1);
+}
+    IfNode::IfNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "If Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class DeclrNode : public UnitNode {
-public:
-    string value;
-    DeclrNode(string _value)
-	       :UnitNode() {value = _value;}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Declr Node :"  << value << endl;
-        this->visitson(x + 1);
-    }
-};
-class AssignNode : public BinaryNode {
-public:
-    AssignNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void IfNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "If Node" << endl;
+    this->visitson(x + 1);
+}
+DeclrNode::DeclrNode(string _value)
+	   :UnitNode() {value = _value;}
+void DeclrNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Declr Node :"  << value << endl;
+    this->visitson(x + 1);
+}
+    AssignNode::AssignNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Assign Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class OrNode : public BinaryNode {
-public:
-    OrNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void AssignNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Assign Node" << endl;
+    this->visitson(x + 1);
+}
+    OrNode::OrNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Or Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class AndNode : public BinaryNode {
-public:
-    AndNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void OrNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Or Node" << endl;
+    this->visitson(x + 1);
+}
+    AndNode::AndNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "And Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class NltNode : public BinaryNode {
-public:
-    NltNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void AndNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "And Node" << endl;
+    this->visitson(x + 1);
+}
+    NltNode::NltNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Nlt Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class NgtNode : public BinaryNode {
-public:
-    NgtNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void NltNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Nlt Node" << endl;
+    this->visitson(x + 1);
+}
+    NgtNode::NgtNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Ngt Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class LtNode : public BinaryNode {
-public:
-    LtNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void NgtNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Ngt Node" << endl;
+    this->visitson(x + 1);
+}
+    LtNode::LtNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Lt Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class GtNode : public BinaryNode {
-public:
-    GtNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void LtNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Lt Node" << endl;
+    this->visitson(x + 1);
+}
+    GtNode::GtNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Gt Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class NeqNode : public BinaryNode {
-public:
-    NeqNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void GtNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Gt Node" << endl;
+    this->visitson(x + 1);
+}
+    NeqNode::NeqNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Neq Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class EqNode : public BinaryNode {
-public:
-    EqNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void NeqNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Neq Node" << endl;
+    this->visitson(x + 1);
+}
+    EqNode::EqNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Eq Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class SubNode : public BinaryNode {
-public:
-    SubNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void EqNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Eq Node" << endl;
+    this->visitson(x + 1);
+}
+    SubNode::SubNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Sub Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class AddNode : public BinaryNode {
-public:
-    AddNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void SubNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Sub Node" << endl;
+    this->visitson(x + 1);
+}
+    AddNode::AddNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Add Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class ModNode : public BinaryNode {
-public:
-    ModNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void AddNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Add Node" << endl;
+    this->visitson(x + 1);
+}
+    ModNode::ModNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Mod Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class DivNode : public BinaryNode {
-public:
-    DivNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void ModNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Mod Node" << endl;
+    this->visitson(x + 1);
+}
+    DivNode::DivNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Div Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class MulNode : public BinaryNode {
-public:
-    MulNode(shared_ptr<Node> a,shared_ptr<Node> b)
+void DivNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Div Node" << endl;
+    this->visitson(x + 1);
+}
+    MulNode::MulNode(shared_ptr<Node> a,shared_ptr<Node> b)
 	       :BinaryNode(a,b) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Mul Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class RevNode : public UnaryNode {
-public:
-    RevNode(shared_ptr<Node> a)
+void MulNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Mul Node" << endl;
+    this->visitson(x + 1);
+}
+    RevNode::RevNode(shared_ptr<Node> a)
 	       :UnaryNode(a) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Rev Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class NotNode : public UnaryNode {
-public:
-    NotNode(shared_ptr<Node> a)
+void RevNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Rev Node" << endl;
+    this->visitson(x + 1);
+}
+    NotNode::NotNode(shared_ptr<Node> a)
 	       :UnaryNode(a) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Not Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class NegNode : public UnaryNode {
-public:
-    NegNode(shared_ptr<Node> a)
+void NotNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Not Node" << endl;
+    this->visitson(x + 1);
+}
+    NegNode::NegNode(shared_ptr<Node> a)
 	       :UnaryNode(a) {}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "Neg Node" << endl;
-        this->visitson(x + 1);
-    }
-};
-class IDNode : public UnitNode {
-public:
-    string value;
-    IDNode(string _value)
-	       :UnitNode() {value = _value;}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "ID Node :"  << value << endl;
-        this->visitson(x + 1);
-    }
-};
-class strNode : public UnitNode {
-public:
-    string value;
-    strNode(string _value)
-	       :UnitNode() {value = _value;}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "str Node :"  << value << endl;
-        this->visitson(x + 1);
-    }
-};
-class realNode : public UnitNode {
-public:
-    string value;
-    realNode(string _value)
-	       :UnitNode() {value = _value;}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "real Node :"  << value << endl;
-        this->visitson(x + 1);
-    }
-};
-class intNode : public UnitNode {
-public:
-    string value;
-    intNode(string _value)
-	       :UnitNode() {value = _value;}
-    virtual void visit(int x) {
-        for (int i = 1; i <= x; i++)printf("    ");
-        cout << "int Node :"  << value << endl;
-        this->visitson(x + 1);
-    }
-};
+void NegNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "Neg Node" << endl;
+    this->visitson(x + 1);
+}
+IDNode::IDNode(string _value)
+	   :UnitNode() {value = _value;}
+void IDNode::visit(int x) {
+    for (int i = 1; i <= x; i++)printf("    ");
+    cout << "ID Node :"  << value << endl;
+    this->visitson(x + 1);
+}
 
 bool parseStmts();
 bool parseStmt();
@@ -996,7 +993,7 @@ bool parseValue(){
     SavedRoot1 = root;
     ReadinToken1 = lex.readNextToken();
     if (ReadinToken1.id == LEX_STRING) {
-        root = shared_ptr<Node> (new strNode(ReadinToken1.name));
+        root = shared_ptr<Node> (new ValueNode(ReadinToken1.name));
         return 1;
     }
     lex.setNowPos(SavedLexPos1);
@@ -1005,7 +1002,7 @@ bool parseValue(){
     SavedRoot1 = root;
     ReadinToken1 = lex.readNextToken();
     if (ReadinToken1.id == LEX_REAL) {
-        root = shared_ptr<Node> (new realNode(ReadinToken1.name));
+        root = shared_ptr<Node> (new ValueNode(_stod(ReadinToken1.name)));
         return 1;
     }
     lex.setNowPos(SavedLexPos1);
@@ -1014,7 +1011,7 @@ bool parseValue(){
     SavedRoot1 = root;
     ReadinToken1 = lex.readNextToken();
     if (ReadinToken1.id == LEX_INT) {
-        root = shared_ptr<Node> (new intNode(ReadinToken1.name));
+        root = shared_ptr<Node> (new ValueNode(_stoi(ReadinToken1.name)));
         return 1;
     }
     lex.setNowPos(SavedLexPos1);
@@ -1034,14 +1031,4 @@ bool parseLValue(){
     return 0;
 }
 
-int main() {
-	if (parseSum()) {
-		root->visit(0);
-		return 1;
-	}
-	return 0;
-	//for (int i = 1; i <= 30; i++)
-	//	out(lex.readNextToken());
-	return 0;
-}
 

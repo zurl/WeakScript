@@ -1,0 +1,67 @@
+#pragma once
+#include "common.h"
+#include "Lex.h"
+#ifndef PARSER_H
+#define PARSER_H
+class Value {
+public:
+	Value();
+	Value(const string &t);
+	Value(const long long &t);
+	Value(const double &t);
+	Value(const Value &t);
+	~Value();
+	Value & operator= (const Value & t);
+	enum class Type {
+		Null, Int, Real, Str
+	};
+	Type type;
+	union {
+		long long Int;
+		double Real;
+		string * Str;
+	} data;
+};
+class Node {
+public:
+	virtual void visit(int x)=0;
+	virtual void del()=0;
+	virtual Value eval()=0;
+};
+
+class UnitNode : public Node {
+public:
+	UnitNode();
+	void visitson(int x);
+	virtual void del();
+};
+class UnaryNode : public Node {
+	shared_ptr<Node> son;
+public:
+	UnaryNode(shared_ptr<Node>  _s);
+	void visitson(int x);
+	virtual void del();
+};
+class BinaryNode : public Node {
+	shared_ptr<Node> left, right;
+public:
+	BinaryNode(shared_ptr<Node>  _l, shared_ptr<Node>  _r);
+	void visitson(int x);
+	virtual void del();
+};
+class TernaryNode : public Node {
+	shared_ptr<Node> left, mid, right;
+public:
+	TernaryNode(shared_ptr<Node> _l, shared_ptr<Node> _m, shared_ptr<Node> _r);
+	void visitson(int x);
+	virtual void del();
+};
+class ValueNode : public UnitNode {
+public:
+	Value val;
+	ValueNode(string _value);
+	ValueNode(double _value);
+	ValueNode(long long _value);
+	virtual void visit(int x);
+	virtual Value eval();
+};

@@ -114,8 +114,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="gma.rule" />
+    <None Include="headerfile.code" />
     <None Include="result.code" />
-    <None Include="tail.code" />
+    <None Include="result.header.code" />
     <None Include="test.gma" />
   </ItemGroup>
   <ItemGroup>

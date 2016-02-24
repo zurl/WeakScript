@@ -1,6 +1,4 @@
 #include "Lex.h"
-#include "WeakScriptLex.h"
-
 Reg::edge::edge() = default;
 Reg::edge::edge(int _t, char _v, edge *_prev) :
 t(_t), v(_v), prev(_prev){}
@@ -153,7 +151,7 @@ bool Lex::loadToken(){
 }
 void Lex::acceptToken(int id, string &name){
 	if (id == LEX_SPACE || id == LEX_TAB || id == LEX_NL)return;
-	if (id == LEX_ID || id==LEX_STRING ||id ==LEX_NUMBER)
+	if (id == LEX_ID || id==LEX_STRING ||id ==LEX_INT || id == LEX_REAL)
 		tokenList.emplace_back(id, name, line);
 	else tokenList.emplace_back(id, "", line);
 }

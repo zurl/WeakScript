@@ -64,9 +64,9 @@ $ValueGroup
 
 :RULE
 $Value 
-| %INT									@ * int string ReadinToken1.name @
-| %REAL									@ * real string ReadinToken1.name @
-| %STRING								@ * str string ReadinToken1.name @
+| %INT									@ * Value string _stoi(ReadinToken1.name) @
+| %REAL									@ * Value string _stod(ReadinToken1.name) @
+| %STRING								@ * Value string ReadinToken1.name @
 | %ID									@ * ID string ReadinToken1.name @
 :RULEEND
 
