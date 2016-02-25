@@ -64,9 +64,11 @@ NGT <=
 LT <
 NLT >=
 AND &&
-OR ||
+OR \|\|
 REV ~
 NOT !
+BOR \|
+BAND \&
 
 #value
 

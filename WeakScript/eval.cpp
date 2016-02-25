@@ -1,6 +1,6 @@
 #include "parser.h"
 
-class MyExpection {
+class MyExpection   {
 	//Abs Class
 };
 class CalTypeException : public MyExpection {
@@ -44,17 +44,17 @@ public:
 		try {
 			this->getVar(name);
 		}
-		catch (UndefinedVariableException e) {
+		catch (UndefinedVariableException) {
 			this->table.emplace(name, Value());
 			return;
 		}
-		throw new RedefinedVariableException(name);
+		throw RedefinedVariableException(name);
 	}
-	Value & getVar( string name ) {
+	Value & getVar( string name ) throw(MyExpection) {
 		auto t = table.find(name);
 		if (t == table.end()) {
 			if (prev == nullptr)
-				throw new UndefinedVariableException(name);
+				throw UndefinedVariableException(name);	
 			else
 				return prev->getVar(name);
 		}
@@ -90,8 +90,8 @@ Value Value::operator- () {
 		return Value(-this->data.Int);
 	if(this->type == Type::Real)
 		return Value(-this->data.Real);
-	throw new CalTypeException(*this);
-}
+	throw CalTypeException(*this);
+}		
 Value Value::operator+ (const Value &t) {
 	//For Str
 	if (this->type == Type::Str && t.type == Type::Str)
@@ -113,7 +113,7 @@ Value Value::operator+ (const Value &t) {
 		return Value(this->data.Real + t.data.Real);
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value(this->data.Int + t.data.Real);
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value Value::operator- (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
@@ -124,7 +124,7 @@ Value Value::operator- (const Value &t) {
 		return Value(this->data.Real - t.data.Real);
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value(this->data.Int - t.data.Real);
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value Value::operator* (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
@@ -135,7 +135,7 @@ Value Value::operator* (const Value &t) {
 		return Value(this->data.Real * t.data.Real);
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value(this->data.Int * t.data.Real);
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value Value::operator/ (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
@@ -146,44 +146,44 @@ Value Value::operator/ (const Value &t) {
 		return Value(this->data.Real / t.data.Real);
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value(this->data.Int / t.data.Real);
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value Value::operator% (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
 		return Value(this->data.Int / t.data.Int);
-	throw new CalTypeException(*this,t);
+	throw CalTypeException(*this,t);
 }
 
 Value Value::operator&& (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
 		return Value(this->data.Int / t.data.Int);
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value Value::operator|| (const Value &t){
 	if (this->type == Type::Int && t.type == Type::Int)
 		return Value(this->data.Int / t.data.Int);
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value Value::operator! () {
 	if (this->type == Type::Int)
 		return Value((long long)!this->data.Int);
-	throw new CalTypeException(*this);
+	throw CalTypeException(*this);
 }
 
 Value Value::operator~ () {
 	if (this->type == Type::Int)
 		return Value(~this->data.Int);
-	throw new CalTypeException(*this);
+	throw CalTypeException(*this);
 }
 //Value Value::operator& (const Value &t){
 //	if (this->type == Type::Int && t.type == Type::Int)
 //		return Value(this->data.Int / t.data.Int);
-//	throw new CalTypeException(*this, t);
+//	throw CalTypeException(*this, t);
 //}
 //Value Value::operator| (const Value &t){
 //	if (this->type == Type::Int && t.type == Type::Int)
 //		return Value(this->data.Int / t.data.Int);
-//	throw new CalTypeException(*this, t);
+//	throw CalTypeException(*this, t);
 //}
 
 Value Value::operator!= (const Value &t) {
@@ -193,8 +193,8 @@ Value Value::operator== (const Value &t) {
 	if (this->type != t.type)
 		return Value((long long)0);
 	if (this->type == Type::Int && this->data.Int == t.data.Int
-		|| this->type == Type::Str && this->data.Real == t.data.Real
-		|| this->type == Type::Real && *this->data.Str == *t.data.Str
+		|| this->type == Type::Real && this->data.Real == t.data.Real
+		|| this->type == Type::Str && *this->data.Str == *t.data.Str
 		)
 		return Value((long long)1);
 	return Value((long long)0);
@@ -208,7 +208,7 @@ Value Value::operator> (const Value &t) {
 		return Value((long long)(this->data.Real > t.data.Real));
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value((long long)(this->data.Int > t.data.Real));
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value Value::operator< (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
@@ -219,7 +219,7 @@ Value Value::operator< (const Value &t) {
 		return Value((long long)(this->data.Real < t.data.Real));
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value((long long)(this->data.Int < t.data.Real));
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value Value::operator>= (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
@@ -230,7 +230,7 @@ Value Value::operator>= (const Value &t) {
 		return Value((long long)(this->data.Real >= t.data.Real));
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value((long long)(this->data.Int >= t.data.Real));
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value Value::operator<= (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
@@ -241,7 +241,7 @@ Value Value::operator<= (const Value &t) {
 		return Value((long long)(this->data.Real <= t.data.Real));
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value((long long)(this->data.Int <= t.data.Real));
-	throw new CalTypeException(*this, t);
+	throw CalTypeException(*this, t);
 }
 Value StmtsNode::eval() {
 	left->eval();
@@ -317,7 +317,8 @@ Value NegNode::eval() {
 }
 Value WhileNode::eval() {
 	while (1) {
-		if (!left->eval().isTrue())return Value();
+		auto t = left->eval();
+		if (!t.isTrue())return Value();
 		try {
 			right->eval();
 		}
@@ -345,11 +346,11 @@ Value IfNode::eval() {
 	return Value();
 }
 Value ContinueNode::eval() {
-	throw new ContinueException();
+	throw ContinueException();
 	return Value();
 }
 Value BreakNode::eval() {
-	throw new BreakException();
+	throw BreakException();
 	return Value();
 }
 Value BlockNode::eval() {
@@ -383,8 +384,11 @@ Value DeclrNode::eval() {
 Value IDNode::eval() {
 	return NowVarTable->getVar(this->value);
 }
+extern ostream & operator<< (ostream & ,const Value & );
+
 Value AssignNode::eval() {
 	Value & temp = NowVarTable->getVar(((IDNode *)((this->left).get()))->value);
 	temp = right->eval();
+	cout << "Assign : " << temp << endl;
 	return Value();
 }

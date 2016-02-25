@@ -22,16 +22,19 @@ func helloworld(a,b){
 GMA RULE;
 
 Stmts := stmt | stmt Stmts
-stmt := stmtson
-Stmtson :=  LValue = Expr; 
-		| Expr;
-		| ;
-		| var ID;
-		| { stmts }
+stmt := stmtson ; | { stmts }
+Stmtson :=  LValue = Expr
+		| LValue = funcdlcr
+		| Expr
+		| var ID 
 		| if ( Expr ) stmt else stmt 
 		| while ( Expr ) stmt 
-		| break ;
-		| continue ;
+		| break 
+		| continue 
+VarDecl := var a [ , b];
+
+FuncDlcr := func ( args ) { stmts }
+
 openstmt := if ( Expr ) stmt else openstmt ;
           | if ( Expr ) stmt
 Expr := AndExpr [ || AndExpr ]
@@ -48,5 +51,6 @@ Fact :=		 ValueGroup [ * ValueGroup ]
 			|ValueGroup [ / ValueGroup ] 
 			|ValueGroup [ % ValueGroup ] 
 ValueGroup : Value | -Value | !Value | ~Value | ( Expr )
-Value :=	NUMBER | STRING | ID
+Value :=	NUMBER | STRING | ID | ID ( args )
+args := a * a;
 LValue := ID
