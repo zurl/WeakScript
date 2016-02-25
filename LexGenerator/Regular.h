@@ -17,7 +17,7 @@ public:
 	enum class ope{
 		and, or, left, rep, able, prep
 	};
-	static const int POINT_MAX = 5000;
+	static const int POINT_MAX = 8000;
 	static const char preDef[10];
 	static const int preDefCount = 9;
 	class edge{

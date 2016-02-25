@@ -7,8 +7,10 @@ extern bool parseStmt();
 int main() {
 	if (parseStmt()) {		
 		root->visit(0);
+		root->eval();
 		return 1;
 	}
+	std::out_of_range;
 	return 0;
 	//for (int i = 1; i <= 30; i++)
 	//	out(lex.readNextToken());

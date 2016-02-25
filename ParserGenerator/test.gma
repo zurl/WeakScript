@@ -8,17 +8,37 @@ $Stmts
 
 :RULE
 $Stmt
-| $LValue %ASSIGN $Expr %SEMI			@ Assign 2 SavedRoot3 root @
-| $Expr %SEMI							@ # @
-| %SEMI									@ # @
-| %VAR %ID %SEMI						@ * Declr string ReadinToken2.name @
 | %LCB $Stmts %RCB						@ Block 1 root @
 | %IF %LP $Expr %RP $Stmt %ELSE $Stmt	@ IfElse 3 SavedRoot4 SavedRoot6 root @
 | %IF %LP $Expr %RP $Stmt				@ If 2 SavedRoot4 root @
 | %WHILE %LP $Expr %RP $Stmt			@ While 2 SavedRoot4 root @
-| %BREAK %SEMI							@ Break 0 @
-| %CONTINUE %SEMI						@ Continue 0 @
+| %FOR %LP $StmtBase %SEMI $Expr %SEMI
+	 $StmtBase %RP $Stmt				@ For 4 SavedRoot4 SavedRoot6 SavedRoot8 root @
+| $StmtBase	%SEMI						@ # @
 :RULEEND
+
+:RULE
+$StmtBase
+| %BREAK								@ Break 0 @
+| %CONTINUE								@ Continue 0 @
+| $LValue %ASSIGN $Expr					@ Assign 2 SavedRoot3 root @
+| $LValue %ASSIGN $FuncDef				@ AssignFunc 2 SavedRoot3 root @
+| $Expr									@ # @
+| %VAR %ID								@ * Declr string ReadinToken2.name @
+:EMPTY
+:RULEEND
+
+:RULE
+$FuncDef
+| %FUNC %LP $ArguDef %RP %LCB $Stmts %RCB	@ FuncDef 2 SavedRoot4 root @
+:RULEEND
+
+:RULE
+$ArguDef
+| %ID * %COM %ID @ ArguDef  2 SavedRoot4 root @
+:EMPTY
+:RULEEND
+
 
 :RULE
 $Expr 
@@ -68,6 +88,7 @@ $Value
 | %REAL									@ * Value string _stod(ReadinToken1.name) @
 | %STRING								@ * Value string ReadinToken1.name @
 | %ID									@ * ID string ReadinToken1.name @
+| %ID %LP $Argu %RP                     @ FuncCall ReadinToken1.name root @
 :RULEEND
 
 :RULE

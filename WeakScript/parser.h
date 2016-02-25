@@ -39,13 +39,14 @@ public:
 
 	bool isTrue();
 	enum class Type {
-		Null, Int, Real, Str
+		Null, Int, Real, Str, Ref
 	};
 	Type type;
 	union {
 		long long Int;
 		double Real;
 		string * Str;
+		long long Object;
 	} data;
 };
 class Node {
@@ -83,6 +84,14 @@ protected:
 	shared_ptr<Node> left, mid, right;
 public:
 	TernaryNode(shared_ptr<Node> _l, shared_ptr<Node> _m, shared_ptr<Node> _r);
+	void visitson(int x);
+	virtual void del();
+};
+class QuadNode : public Node {
+protected:
+	shared_ptr<Node> left, midleft,midright, right;
+public:
+	QuadNode(shared_ptr<Node> _l, shared_ptr<Node> _ml, shared_ptr<Node> _mr, shared_ptr<Node> _r);
 	void visitson(int x);
 	virtual void del();
 };
@@ -252,5 +261,6 @@ public:
 	virtual void visit(int x);
 	virtual Value eval();
 };
+ostream & operator<< (ostream & ,const Value & );
 #endif // !PARSER_H
 

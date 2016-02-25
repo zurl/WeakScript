@@ -37,6 +37,20 @@ void TernaryNode::del() {
 	mid->del();
 	right->del();
 }
+QuadNode::QuadNode(shared_ptr<Node> _l, shared_ptr<Node>  _ml, shared_ptr<Node> _mr, shared_ptr<Node>  _r)
+	:left(_l), midleft(_ml),midright(_mr), right(_r) {}
+void QuadNode::visitson(int x) {
+	left->visit(x);
+	midleft->visit(x);
+	midright->visit(x);
+	right->visit(x);
+}
+void QuadNode::del() {
+	left->del();
+	midleft->del();
+	midright->del();
+	right->del();
+}
 Value::Value() {
 	if (type == Type::Str)
 		delete data.Str;
