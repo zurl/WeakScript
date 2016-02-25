@@ -12,7 +12,7 @@ $Stmt
 | $Expr %SEMI							@ # @
 | %SEMI									@ # @
 | %VAR %ID %SEMI						@ * Declr string ReadinToken2.name @
-| %LCB $Stmts %RCB						@ # @
+| %LCB $Stmts %RCB						@ Block 1 root @
 | %IF %LP $Expr %RP $Stmt %ELSE $Stmt	@ IfElse 3 SavedRoot4 SavedRoot6 root @
 | %IF %LP $Expr %RP $Stmt				@ If 2 SavedRoot4 root @
 | %WHILE %LP $Expr %RP $Stmt			@ While 2 SavedRoot4 root @

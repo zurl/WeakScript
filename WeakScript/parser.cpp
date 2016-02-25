@@ -127,7 +127,13 @@ ostream& operator << (ostream &o, const Value& a) {
 	return o;
 }
 
-
+BlockNode::BlockNode(shared_ptr<Node> a)
+	:UnaryNode(a) {}
+void BlockNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Block Node" << endl;
+	this->visitson(x + 1);
+}
 ValueNode::ValueNode(string _value)
 	:val(_value), UnitNode() {
 }
@@ -517,6 +523,7 @@ bool parseStmt() {
 			auto SavedRoot3 = root;
 			auto ReadinToken3 = lex.readNextToken();
 			if (ReadinToken3.id == LEX_RCB) {
+				root = shared_ptr<Node>(new BlockNode(root));
 				return 1;
 			}
 			lex.setNowPos(SavedLexPos3);
