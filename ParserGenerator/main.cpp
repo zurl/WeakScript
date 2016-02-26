@@ -34,10 +34,10 @@ void app(string &x, string y, int tabs) {
 	for (int i = 1; i <= tabs; i++)x += "    ";
 	x += y + "\n";
 }
-const int MAX = 1000;
+const int MAX = 2000;
 string headfile = "";
 set<string> nodehash;
-string nodeWords[5] = {"Unit", "Unary", "Binary","Ternary"};
+string nodeWords[5] = {"Unit", "Unary", "Binary","Ternary","Quad"};
 void createNewNode(string name, int base) {
 	string baseName = nodeWords[base];
 	string tstr1 = "",tstr2="";
@@ -171,7 +171,7 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 				outputEnd(t, deep);
 				if (!isCir)app(body, "return 1;", deep +1);
 				else {
-					app(body, "flag = 1", deep +1); app(body, "continue;", deep +1);
+					app(body, "flag = 1;", deep + 1); app(body, "continue;", deep + 1);
 				}
 			}
 			//app(body, "}", deep);

@@ -11,37 +11,42 @@ public:
 	Value(const double &t);
 	Value(const Value &t);
 	~Value();
+
 	Value & operator= (const Value & t);
 
-	Value & operator+ (const Value & t);
-	Value & operator- (const Value & t);
-	Value & operator* (const Value & t);
-	Value & operator/ (const Value & t);
-	Value & operator% (const Value & t);
+	Value operator+ (const Value & t);
+	Value operator- (const Value & t);
+	Value operator* (const Value & t);
+	Value operator/ (const Value & t);
+	Value operator% (const Value & t);
 
-	Value & operator&& (const Value & t);
-	Value & operator|| (const Value & t);
-	Value & operator! ();
+	Value operator&& (const Value & t);
+	Value operator|| (const Value & t);
+	Value operator! ();
 
-	Value & operator~ ();
-	//Value & operator& (const Value & t);
-	//Value & operator| (const Value & t);
+	Value operator- ();
+	Value operator~ ();
+	//Value operator& (const Value & t);
+	//Value operator| (const Value & t);
 
-	Value & operator!= (const Value & t);
-	Value & operator== (const Value & t);
-	Value & operator> (const Value & t);
-	Value & operator< (const Value & t);
-	Value & operator>= (const Value & t);
-	Value & operator<= (const Value & t);
 
+	Value operator!= (const Value & t);
+	Value operator== (const Value & t);
+	Value operator> (const Value & t);
+	Value operator< (const Value & t);
+	Value operator>= (const Value & t);
+	Value operator<= (const Value & t);
+
+	bool isTrue();
 	enum class Type {
-		Null, Int, Real, Str
+		Null, Int, Real, Str, Ref
 	};
 	Type type;
 	union {
 		long long Int;
 		double Real;
 		string * Str;
+		long long Object;
 	} data;
 };
 class Node {
@@ -81,6 +86,14 @@ public:
 	void visitson(int x);
 	virtual void del();
 };
+class QuadNode : public Node {
+protected:
+	shared_ptr<Node> left, midleft,midright, right;
+public:
+	QuadNode(shared_ptr<Node> _l, shared_ptr<Node> _ml, shared_ptr<Node> _mr, shared_ptr<Node> _r);
+	void visitson(int x);
+	virtual void del();
+};
 class ValueNode : public UnitNode {
 public:
 	Value val;
@@ -89,21 +102,16 @@ public:
 	ValueNode(long long _value);
 	virtual void visit(int x);
 	virtual Value eval();
-};class StmtsNode : public BinaryNode {
+};
+class StmtsNode : public BinaryNode {
 public:
     StmtsNode(shared_ptr<Node> a,shared_ptr<Node> b);
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
-class ContinueNode : public UnitNode {
+class ForNode : public QuadNode {
 public:
-    ContinueNode();
-    virtual void visit(int x) ;
-    virtual Value eval() ;
-};
-class BreakNode : public UnitNode {
-public:
-    BreakNode();
+    ForNode(shared_ptr<Node> a,shared_ptr<Node> b,shared_ptr<Node> c,shared_ptr<Node> d);
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
@@ -138,9 +146,88 @@ public:
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
+class AssignFuncNode : public BinaryNode {
+public:
+    AssignFuncNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
 class AssignNode : public BinaryNode {
 public:
     AssignNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class ReturnNode : public UnaryNode {
+public:
+    ReturnNode(shared_ptr<Node> a);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class ReturnNullNode : public UnaryNode {
+public:
+    ReturnNullNode(shared_ptr<Node> a);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class ContinueNode : public UnitNode {
+public:
+    ContinueNode();
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class BreakNode : public UnitNode {
+public:
+    BreakNode();
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class FuncDefNode : public BinaryNode {
+public:
+    FuncDefNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class ArguDefNode : public BinaryNode {
+public:
+    ArguDefNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class RevNode : public UnaryNode {
+public:
+    RevNode(shared_ptr<Node> a);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class NotNode : public UnaryNode {
+public:
+    NotNode(shared_ptr<Node> a);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class NegNode : public UnaryNode {
+public:
+    NegNode(shared_ptr<Node> a);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class FuncCallNode : public BinaryNode {
+public:
+    FuncCallNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class ArguNode : public BinaryNode {
+public:
+    ArguNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class IDNode : public UnitNode {
+public:
+    string value;
+    IDNode(string _value);
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
@@ -153,6 +240,30 @@ public:
 class AndNode : public BinaryNode {
 public:
     AndNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class BorNode : public BinaryNode {
+public:
+    BorNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class BandNode : public BinaryNode {
+public:
+    BandNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class NeqNode : public BinaryNode {
+public:
+    NeqNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class EqNode : public BinaryNode {
+public:
+    EqNode(shared_ptr<Node> a,shared_ptr<Node> b);
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
@@ -177,18 +288,6 @@ public:
 class GtNode : public BinaryNode {
 public:
     GtNode(shared_ptr<Node> a,shared_ptr<Node> b);
-    virtual void visit(int x) ;
-    virtual Value eval() ;
-};
-class NeqNode : public BinaryNode {
-public:
-    NeqNode(shared_ptr<Node> a,shared_ptr<Node> b);
-    virtual void visit(int x) ;
-    virtual Value eval() ;
-};
-class EqNode : public BinaryNode {
-public:
-    EqNode(shared_ptr<Node> a,shared_ptr<Node> b);
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
@@ -219,31 +318,6 @@ public:
 class MulNode : public BinaryNode {
 public:
     MulNode(shared_ptr<Node> a,shared_ptr<Node> b);
-    virtual void visit(int x) ;
-    virtual Value eval() ;
-};
-class RevNode : public UnaryNode {
-public:
-    RevNode(shared_ptr<Node> a);
-    virtual void visit(int x) ;
-    virtual Value eval() ;
-};
-class NotNode : public UnaryNode {
-public:
-    NotNode(shared_ptr<Node> a);
-    virtual void visit(int x) ;
-    virtual Value eval() ;
-};
-class NegNode : public UnaryNode {
-public:
-    NegNode(shared_ptr<Node> a);
-    virtual void visit(int x) ;
-    virtual Value eval() ;
-};
-class IDNode : public UnitNode {
-public:
-    string value;
-    IDNode(string _value);
     virtual void visit(int x) ;
     virtual Value eval() ;
 };

@@ -1,8 +1,12 @@
 {
-	var a;
+	var i;
+	for(i=1;i<=10;i=i+1){
+		continue;
+	}
+	var a = func(a,b){
+		var ac;
+		ret a+b;
+	}
 	var b;
-	var c;
-	a=1;
-	b="nihao";
-	c=3.0;
+	b = (1,2);
 }

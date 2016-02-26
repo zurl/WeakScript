@@ -37,6 +37,20 @@ void TernaryNode::del() {
 	mid->del();
 	right->del();
 }
+QuadNode::QuadNode(shared_ptr<Node> _l, shared_ptr<Node>  _ml, shared_ptr<Node> _mr, shared_ptr<Node>  _r)
+	:left(_l), midleft(_ml),midright(_mr), right(_r) {}
+void QuadNode::visitson(int x) {
+	left->visit(x);
+	midleft->visit(x);
+	midright->visit(x);
+	right->visit(x);
+}
+void QuadNode::del() {
+	left->del();
+	midleft->del();
+	midright->del();
+	right->del();
+}
 Value::Value() {
 	if (type == Type::Str)
 		delete data.Str;
@@ -109,48 +123,48 @@ Value & Value::operator= (const Value & t) {
 	}
 	return *this;
 }
-ostream& operator << (ostream &o, const Value& a){
+ostream& operator << (ostream &o, const Value& a) {
 	switch (a.type) {
-		case Value::Type::Int:
-			cout<<a.data.Int;
-			break;
-		case Value::Type::Real:
-			cout<<a.data.Real;
-			break;
-		case Value::Type::Str:
-			cout<<*a.data.Str;
-			break;
-		case Value::Type::Null:	
-			cout<<"Null";
-			break;
-		}
-		return o;
+	case Value::Type::Int:
+		cout << a.data.Int;
+		break;
+	case Value::Type::Real:
+		cout << a.data.Real;
+		break;
+	case Value::Type::Str:
+		cout << *a.data.Str;
+		break;
+	case Value::Type::Null:
+		cout << "Null";
+		break;
+	}
+	return o;
 }
 
 
 ValueNode::ValueNode(string _value)
-	:val(_value),UnitNode() {
+	:val(_value), UnitNode() {
 }
-	ValueNode::ValueNode(double _value)
-	:val(_value),UnitNode() {
+ValueNode::ValueNode(double _value)
+	: val(_value), UnitNode() {
 }
 ValueNode::ValueNode(long long _value)
-	:val(_value),UnitNode() {
+	: val(_value), UnitNode() {
 }
 void ValueNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
 	switch (val.type) {
 	case Value::Type::Int:
-		cout<<"INT VALUE:";
+		cout << "INT VALUE:";
 		break;
 	case Value::Type::Real:
-		cout<<"REAL VALUE:";
+		cout << "REAL VALUE:";
 		break;
-	case Value:: Type::Str:
-		cout<<"STR VALUE:";
+	case Value::Type::Str:
+		cout << "STR VALUE:";
 		break;
-	case Value:: Type::Null:
-		cout<<"NULL VALUE:";
+	case Value::Type::Null:
+		cout << "NULL VALUE:";
 		break;
 	}
 	cout << val << endl;
@@ -172,4 +186,4 @@ long long _stoi(string x) {
 	long long ret;
 	is >> ret;
 	return ret;
-}
+} 

@@ -38,7 +38,7 @@ void TernaryNode::del() {
 	right->del();
 }
 QuadNode::QuadNode(shared_ptr<Node> _l, shared_ptr<Node>  _ml, shared_ptr<Node> _mr, shared_ptr<Node>  _r)
-	:left(_l), midleft(_ml),midright(_mr), right(_r) {}
+	:left(_l), midleft(_ml), midright(_mr), right(_r) {}
 void QuadNode::visitson(int x) {
 	left->visit(x);
 	midleft->visit(x);
@@ -50,78 +50,6 @@ void QuadNode::del() {
 	midleft->del();
 	midright->del();
 	right->del();
-}
-Value::Value() {
-	if (type == Type::Str)
-		delete data.Str;
-	type = Type::Null;
-}
-Value::Value(const string &t) {
-	if (type == Type::Str)
-		delete data.Str;
-	this->type = Type::Str;
-	this->data.Str = new string(t);
-}
-Value::Value(const long long &t) {
-	if (type == Type::Str)
-		delete data.Str;
-
-	this->type = Type::Int;
-	this->data.Int = t;
-}
-Value::Value(const double &t) {
-	if (type == Type::Str)
-		delete data.Str;
-	this->type = Type::Real;
-	this->data.Real = t;
-}
-Value::Value(const Value &t) {
-	if (type == Type::Str)
-		delete data.Str;
-	switch (t.type) {
-	case Type::Int:
-		this->type = Type::Int;
-		this->data.Int = t.data.Int;
-		break;
-	case Type::Real:
-		this->type = Type::Real;
-		this->data.Real = t.data.Real;
-		break;
-	case Type::Str:
-		this->type = Type::Str;
-		this->data.Str = new string(*t.data.Str);
-		break;
-	case Type::Null:
-		this->type = Type::Null;
-		break;
-	}
-}
-Value::~Value() {
-	if (type == Type::Str)
-		delete data.Str;
-	type = Type::Null;
-}
-Value & Value::operator= (const Value & t) {
-	if (type == Type::Str)
-		delete data.Str;
-	switch (t.type) {
-	case Type::Int:
-		this->type = Type::Int;
-		this->data.Int = t.data.Int;
-		break;
-	case Type::Real:
-		this->type = Type::Real;
-		this->data.Real = t.data.Real;
-		break;
-	case Type::Str:
-		this->type = Type::Str;
-		this->data.Str = new string(*t.data.Str);
-		break;
-	case Type::Null:
-		this->type = Type::Null;
-		break;
-	}
-	return *this;
 }
 ostream& operator << (ostream &o, const Value& a) {
 	switch (a.type) {
@@ -141,13 +69,7 @@ ostream& operator << (ostream &o, const Value& a) {
 	return o;
 }
 
-BlockNode::BlockNode(shared_ptr<Node> a)
-	:UnaryNode(a) {}
-void BlockNode::visit(int x) {
-	for (int i = 1; i <= x; i++)printf("    ");
-	cout << "Block Node" << endl;
-	this->visitson(x + 1);
-}
+
 ValueNode::ValueNode(string _value)
 	:val(_value), UnitNode() {
 }
@@ -192,25 +114,19 @@ long long _stoi(string x) {
 	long long ret;
 	is >> ret;
 	return ret;
-}    StmtsNode::StmtsNode(shared_ptr<Node> a, shared_ptr<Node> b)
+}
+StmtsNode::StmtsNode(shared_ptr<Node> a, shared_ptr<Node> b)
 	:BinaryNode(a, b) {}
 void StmtsNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
 	cout << "Stmts Node" << endl;
 	this->visitson(x + 1);
 }
-ContinueNode::ContinueNode()
-	:UnitNode() {}
-void ContinueNode::visit(int x) {
+ForNode::ForNode(shared_ptr<Node> a, shared_ptr<Node> b, shared_ptr<Node> c, shared_ptr<Node> d)
+	:QuadNode(a, b, c, d) {}
+void ForNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
-	cout << "Continue Node" << endl;
-	this->visitson(x + 1);
-}
-BreakNode::BreakNode()
-	:UnitNode() {}
-void BreakNode::visit(int x) {
-	for (int i = 1; i <= x; i++)printf("    ");
-	cout << "Break Node" << endl;
+	cout << "For Node" << endl;
 	this->visitson(x + 1);
 }
 WhileNode::WhileNode(shared_ptr<Node> a, shared_ptr<Node> b)
@@ -234,6 +150,13 @@ void IfNode::visit(int x) {
 	cout << "If Node" << endl;
 	this->visitson(x + 1);
 }
+BlockNode::BlockNode(shared_ptr<Node> a)
+	:UnaryNode(a) {}
+void BlockNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Block Node" << endl;
+	this->visitson(x + 1);
+}
 DeclrNode::DeclrNode(string _value)
 	:UnitNode() {
 	value = _value;
@@ -243,11 +166,104 @@ void DeclrNode::visit(int x) {
 	cout << "Declr Node :" << value << endl;
 	this->visitson(x + 1);
 }
+AssignFuncNode::AssignFuncNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void AssignFuncNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "AssignFunc Node" << endl;
+	this->visitson(x + 1);
+}
 AssignNode::AssignNode(shared_ptr<Node> a, shared_ptr<Node> b)
 	:BinaryNode(a, b) {}
 void AssignNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
 	cout << "Assign Node" << endl;
+	this->visitson(x + 1);
+}
+ReturnNode::ReturnNode(shared_ptr<Node> a)
+	:UnaryNode(a) {}
+void ReturnNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Return Node" << endl;
+	this->visitson(x + 1);
+}
+ReturnNullNode::ReturnNullNode(shared_ptr<Node> a)
+	:UnaryNode(a) {}
+void ReturnNullNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "ReturnNull Node" << endl;
+	this->visitson(x + 1);
+}
+ContinueNode::ContinueNode()
+	:UnitNode() {}
+void ContinueNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Continue Node" << endl;
+	this->visitson(x + 1);
+}
+BreakNode::BreakNode()
+	:UnitNode() {}
+void BreakNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Break Node" << endl;
+	this->visitson(x + 1);
+}
+FuncDefNode::FuncDefNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void FuncDefNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "FuncDef Node" << endl;
+	this->visitson(x + 1);
+}
+ArguDefNode::ArguDefNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void ArguDefNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "ArguDef Node" << endl;
+	this->visitson(x + 1);
+}
+RevNode::RevNode(shared_ptr<Node> a)
+	:UnaryNode(a) {}
+void RevNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Rev Node" << endl;
+	this->visitson(x + 1);
+}
+NotNode::NotNode(shared_ptr<Node> a)
+	:UnaryNode(a) {}
+void NotNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Not Node" << endl;
+	this->visitson(x + 1);
+}
+NegNode::NegNode(shared_ptr<Node> a)
+	:UnaryNode(a) {}
+void NegNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Neg Node" << endl;
+	this->visitson(x + 1);
+}
+FuncCallNode::FuncCallNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void FuncCallNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "FuncCall Node" << endl;
+	this->visitson(x + 1);
+}
+ArguNode::ArguNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void ArguNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Argu Node" << endl;
+	this->visitson(x + 1);
+}
+IDNode::IDNode(string _value)
+	:UnitNode() {
+	value = _value;
+}
+void IDNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "ID Node :" << value << endl;
 	this->visitson(x + 1);
 }
 OrNode::OrNode(shared_ptr<Node> a, shared_ptr<Node> b)
@@ -262,6 +278,34 @@ AndNode::AndNode(shared_ptr<Node> a, shared_ptr<Node> b)
 void AndNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
 	cout << "And Node" << endl;
+	this->visitson(x + 1);
+}
+BorNode::BorNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void BorNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Bor Node" << endl;
+	this->visitson(x + 1);
+}
+BandNode::BandNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void BandNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Band Node" << endl;
+	this->visitson(x + 1);
+}
+NeqNode::NeqNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void NeqNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Neq Node" << endl;
+	this->visitson(x + 1);
+}
+EqNode::EqNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void EqNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Eq Node" << endl;
 	this->visitson(x + 1);
 }
 NltNode::NltNode(shared_ptr<Node> a, shared_ptr<Node> b)
@@ -290,20 +334,6 @@ GtNode::GtNode(shared_ptr<Node> a, shared_ptr<Node> b)
 void GtNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
 	cout << "Gt Node" << endl;
-	this->visitson(x + 1);
-}
-NeqNode::NeqNode(shared_ptr<Node> a, shared_ptr<Node> b)
-	:BinaryNode(a, b) {}
-void NeqNode::visit(int x) {
-	for (int i = 1; i <= x; i++)printf("    ");
-	cout << "Neq Node" << endl;
-	this->visitson(x + 1);
-}
-EqNode::EqNode(shared_ptr<Node> a, shared_ptr<Node> b)
-	:BinaryNode(a, b) {}
-void EqNode::visit(int x) {
-	for (int i = 1; i <= x; i++)printf("    ");
-	cout << "Eq Node" << endl;
 	this->visitson(x + 1);
 }
 SubNode::SubNode(shared_ptr<Node> a, shared_ptr<Node> b)
@@ -341,47 +371,24 @@ void MulNode::visit(int x) {
 	cout << "Mul Node" << endl;
 	this->visitson(x + 1);
 }
-RevNode::RevNode(shared_ptr<Node> a)
-	:UnaryNode(a) {}
-void RevNode::visit(int x) {
-	for (int i = 1; i <= x; i++)printf("    ");
-	cout << "Rev Node" << endl;
-	this->visitson(x + 1);
-}
-NotNode::NotNode(shared_ptr<Node> a)
-	:UnaryNode(a) {}
-void NotNode::visit(int x) {
-	for (int i = 1; i <= x; i++)printf("    ");
-	cout << "Not Node" << endl;
-	this->visitson(x + 1);
-}
-NegNode::NegNode(shared_ptr<Node> a)
-	:UnaryNode(a) {}
-void NegNode::visit(int x) {
-	for (int i = 1; i <= x; i++)printf("    ");
-	cout << "Neg Node" << endl;
-	this->visitson(x + 1);
-}
-IDNode::IDNode(string _value)
-	:UnitNode() {
-	value = _value;
-}
-void IDNode::visit(int x) {
-	for (int i = 1; i <= x; i++)printf("    ");
-	cout << "ID Node :" << value << endl;
-	this->visitson(x + 1);
-}
 
 bool parseStmts();
 bool parseStmt();
+bool parseStmtBase();
+bool parseFuncDef();
+bool parseArguDef();
+bool parseValueGroup();
+bool parseValue();
+bool parseArgu();
+bool parseLValue();
 bool parseExpr();
 bool parseAndExpr();
+bool parseBorExpr();
+bool parseBandExpr();
+bool parseEqCompExpr();
 bool parseCompExpr();
 bool parseSum();
 bool parseFact();
-bool parseValueGroup();
-bool parseValue();
-bool parseLValue();
 
 bool parseStmts() {
 	auto SavedLexPos1 = lex.getNowPos();
@@ -406,30 +413,78 @@ bool parseStmts() {
 bool parseStmt() {
 	auto SavedLexPos1 = lex.getNowPos();
 	auto SavedRoot1 = root;
-	auto ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_CONTINUE) {
+	if (parseStmtBase()) {
 		auto SavedLexPos2 = lex.getNowPos();
 		auto SavedRoot2 = root;
 		auto ReadinToken2 = lex.readNextToken();
 		if (ReadinToken2.id == LEX_SEMI) {
-			root = shared_ptr<Node>(new ContinueNode());
 			return 1;
 		}
 		lex.setNowPos(SavedLexPos2);
 		root = SavedRoot2;
 	}
+	refresh();
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
-	ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_BREAK) {
+	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_FOR) {
 		auto SavedLexPos2 = lex.getNowPos();
 		auto SavedRoot2 = root;
 		auto ReadinToken2 = lex.readNextToken();
-		if (ReadinToken2.id == LEX_SEMI) {
-			root = shared_ptr<Node>(new BreakNode());
-			return 1;
+		if (ReadinToken2.id == LEX_LP) {
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			if (parseStmtBase()) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				auto ReadinToken4 = lex.readNextToken();
+				if (ReadinToken4.id == LEX_SEMI) {
+					auto SavedLexPos5 = lex.getNowPos();
+					auto SavedRoot5 = root;
+					if (parseExpr()) {
+						auto SavedLexPos6 = lex.getNowPos();
+						auto SavedRoot6 = root;
+						auto ReadinToken6 = lex.readNextToken();
+						if (ReadinToken6.id == LEX_SEMI) {
+							auto SavedLexPos7 = lex.getNowPos();
+							auto SavedRoot7 = root;
+							if (parseStmtBase()) {
+								auto SavedLexPos8 = lex.getNowPos();
+								auto SavedRoot8 = root;
+								auto ReadinToken8 = lex.readNextToken();
+								if (ReadinToken8.id == LEX_RP) {
+									auto SavedLexPos9 = lex.getNowPos();
+									auto SavedRoot9 = root;
+									if (parseStmt()) {
+										root = shared_ptr<Node>(new ForNode(SavedRoot4, SavedRoot6, SavedRoot8, root));
+										return 1;
+									}
+									refresh();
+									lex.setNowPos(SavedLexPos9);
+									root = SavedRoot9;
+								}
+								lex.setNowPos(SavedLexPos8);
+								root = SavedRoot8;
+							}
+							refresh();
+							lex.setNowPos(SavedLexPos7);
+							root = SavedRoot7;
+						}
+						lex.setNowPos(SavedLexPos6);
+						root = SavedRoot6;
+					}
+					refresh();
+					lex.setNowPos(SavedLexPos5);
+					root = SavedRoot5;
+				}
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			refresh();
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
 		}
 		lex.setNowPos(SavedLexPos2);
 		root = SavedRoot2;
@@ -549,48 +604,29 @@ bool parseStmt() {
 	}
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	ReadinToken1 = lex.readNextToken();
+	return 0;
+}
+bool parseStmtBase() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	auto ReadinToken1 = lex.readNextToken();
 	if (ReadinToken1.id == LEX_VAR) {
 		auto SavedLexPos2 = lex.getNowPos();
 		auto SavedRoot2 = root;
 		auto ReadinToken2 = lex.readNextToken();
 		if (ReadinToken2.id == LEX_ID) {
-			auto SavedLexPos3 = lex.getNowPos();
-			auto SavedRoot3 = root;
-			auto ReadinToken3 = lex.readNextToken();
-			if (ReadinToken3.id == LEX_SEMI) {
-				root = shared_ptr<Node>(new DeclrNode(ReadinToken2.name));
-				return 1;
-			}
-			lex.setNowPos(SavedLexPos3);
-			root = SavedRoot3;
+			root = shared_ptr<Node>(new DeclrNode(ReadinToken2.name));
+			return 1;
 		}
 		lex.setNowPos(SavedLexPos2);
 		root = SavedRoot2;
-	}
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_SEMI) {
-		return 1;
 	}
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
 	if (parseExpr()) {
-		auto SavedLexPos2 = lex.getNowPos();
-		auto SavedRoot2 = root;
-		auto ReadinToken2 = lex.readNextToken();
-		if (ReadinToken2.id == LEX_SEMI) {
-			return 1;
-		}
-		lex.setNowPos(SavedLexPos2);
-		root = SavedRoot2;
+		return 1;
 	}
 	refresh();
 	lex.setNowPos(SavedLexPos1);
@@ -604,13 +640,106 @@ bool parseStmt() {
 		if (ReadinToken2.id == LEX_ASSIGN) {
 			auto SavedLexPos3 = lex.getNowPos();
 			auto SavedRoot3 = root;
+			if (parseFuncDef()) {
+				root = shared_ptr<Node>(new AssignFuncNode(SavedRoot3, root));
+				return 1;
+			}
+			refresh();
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+			SavedLexPos3 = lex.getNowPos();
+			SavedRoot3 = root;
 			if (parseExpr()) {
+				root = shared_ptr<Node>(new AssignNode(SavedRoot3, root));
+				return 1;
+			}
+			refresh();
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+		}
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
+	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_RETURN) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		if (parseValue()) {
+			root = shared_ptr<Node>(new ReturnNode(root));
+			return 1;
+		}
+		refresh();
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+		root = shared_ptr<Node>(new ReturnNullNode(root));
+		return 1;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_CONTINUE) {
+		root = shared_ptr<Node>(new ContinueNode());
+		return 1;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_BREAK) {
+		root = shared_ptr<Node>(new BreakNode());
+		return 1;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 1;
+}
+bool parseFuncDef() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_FUNC) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		auto ReadinToken2 = lex.readNextToken();
+		if (ReadinToken2.id == LEX_LP) {
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			if (parseArguDef()) {
 				auto SavedLexPos4 = lex.getNowPos();
 				auto SavedRoot4 = root;
 				auto ReadinToken4 = lex.readNextToken();
-				if (ReadinToken4.id == LEX_SEMI) {
-					root = shared_ptr<Node>(new AssignNode(SavedRoot3, root));
-					return 1;
+				if (ReadinToken4.id == LEX_RP) {
+					auto SavedLexPos5 = lex.getNowPos();
+					auto SavedRoot5 = root;
+					auto ReadinToken5 = lex.readNextToken();
+					if (ReadinToken5.id == LEX_LCB) {
+						auto SavedLexPos6 = lex.getNowPos();
+						auto SavedRoot6 = root;
+						if (parseStmts()) {
+							auto SavedLexPos7 = lex.getNowPos();
+							auto SavedRoot7 = root;
+							auto ReadinToken7 = lex.readNextToken();
+							if (ReadinToken7.id == LEX_RCB) {
+								root = shared_ptr<Node>(new FuncDefNode(SavedRoot4, root));
+								return 1;
+							}
+							lex.setNowPos(SavedLexPos7);
+							root = SavedRoot7;
+						}
+						refresh();
+						lex.setNowPos(SavedLexPos6);
+						root = SavedRoot6;
+					}
+					lex.setNowPos(SavedLexPos5);
+					root = SavedRoot5;
 				}
 				lex.setNowPos(SavedLexPos4);
 				root = SavedRoot4;
@@ -622,7 +751,224 @@ bool parseStmt() {
 		lex.setNowPos(SavedLexPos2);
 		root = SavedRoot2;
 	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}
+bool parseArguDef() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_ID) {
+		int flag = 1;
+		while (flag) {
+			flag = 0;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_COM) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				auto ReadinToken4 = lex.readNextToken();
+				if (ReadinToken4.id == LEX_ID) {
+					root = shared_ptr<Node>(new ArguDefNode(SavedRoot4, root));
+					flag = 1;
+					continue;
+				}
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+			return 1;
+		}
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 1;
+}
+bool parseValueGroup() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_LP) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		if (parseExpr()) {
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_RP) {
+				return 1;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+		}
+		refresh();
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_REV) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		if (parseValue()) {
+			root = shared_ptr<Node>(new RevNode(root));
+			return 1;
+		}
+		refresh();
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_NOT) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		if (parseValue()) {
+			root = shared_ptr<Node>(new NotNode(root));
+			return 1;
+		}
+		refresh();
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_SUB) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		if (parseValue()) {
+			root = shared_ptr<Node>(new NegNode(root));
+			return 1;
+		}
+		refresh();
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	if (parseValue()) {
+		return 1;
+	}
 	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}
+bool parseValue() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	if (parseLValue()) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		auto ReadinToken2 = lex.readNextToken();
+		if (ReadinToken2.id == LEX_LP) {
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			if (parseArgu()) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				auto ReadinToken4 = lex.readNextToken();
+				if (ReadinToken4.id == LEX_RP) {
+					root = shared_ptr<Node>(new FuncCallNode(SavedRoot2, root));
+					return 1;
+				}
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			refresh();
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+		}
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+		return 1;
+	}
+	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_STRING) {
+		root = shared_ptr<Node>(new ValueNode(ReadinToken1.name));
+		return 1;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_REAL) {
+		root = shared_ptr<Node>(new ValueNode(_stod(ReadinToken1.name)));
+		return 1;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_INT) {
+		root = shared_ptr<Node>(new ValueNode(_stoi(ReadinToken1.name)));
+		return 1;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}
+bool parseArgu() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	if (parseValue()) {
+		int flag = 1;
+		while (flag) {
+			flag = 0;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_COM) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				if (parseValue()) {
+					root = shared_ptr<Node>(new ArguNode(SavedRoot4, root));
+					flag = 1;
+					continue;
+				}
+				refresh();
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+			return 1;
+		}
+	}
+	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 1;
+}
+bool parseLValue() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_ID) {
+		root = shared_ptr<Node>(new IDNode(ReadinToken1.name));
+		return 1;
+	}
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
 	return 0;
@@ -662,7 +1008,7 @@ bool parseExpr() {
 bool parseAndExpr() {
 	auto SavedLexPos1 = lex.getNowPos();
 	auto SavedRoot1 = root;
-	if (parseCompExpr()) {
+	if (parseBorExpr()) {
 		int flag = 1;
 		while (flag) {
 			flag = 0;
@@ -672,8 +1018,121 @@ bool parseAndExpr() {
 			if (ReadinToken3.id == LEX_AND) {
 				auto SavedLexPos4 = lex.getNowPos();
 				auto SavedRoot4 = root;
-				if (parseCompExpr()) {
+				if (parseBorExpr()) {
 					root = shared_ptr<Node>(new AndNode(SavedRoot4, root));
+					flag = 1;
+					continue;
+				}
+				refresh();
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+			return 1;
+		}
+	}
+	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}
+bool parseBorExpr() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	if (parseBandExpr()) {
+		int flag = 1;
+		while (flag) {
+			flag = 0;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_BOR) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				if (parseBandExpr()) {
+					root = shared_ptr<Node>(new BorNode(SavedRoot4, root));
+					flag = 1;
+					continue;
+				}
+				refresh();
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+			return 1;
+		}
+	}
+	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}
+bool parseBandExpr() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	if (parseEqCompExpr()) {
+		int flag = 1;
+		while (flag) {
+			flag = 0;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_BAND) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				if (parseEqCompExpr()) {
+					root = shared_ptr<Node>(new BandNode(SavedRoot4, root));
+					flag = 1;
+					continue;
+				}
+				refresh();
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+			return 1;
+		}
+	}
+	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}
+bool parseEqCompExpr() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	if (parseCompExpr()) {
+		int flag = 1;
+		while (flag) {
+			flag = 0;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_NEQ) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				if (parseCompExpr()) {
+					root = shared_ptr<Node>(new NeqNode(SavedRoot4, root));
+					flag = 1;
+					continue;
+				}
+				refresh();
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+			SavedLexPos3 = lex.getNowPos();
+			SavedRoot3 = root;
+			ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_EQ) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				if (parseCompExpr()) {
+					root = shared_ptr<Node>(new EqNode(SavedRoot4, root));
 					flag = 1;
 					continue;
 				}
@@ -757,40 +1216,6 @@ bool parseCompExpr() {
 				auto SavedRoot4 = root;
 				if (parseSum()) {
 					root = shared_ptr<Node>(new GtNode(SavedRoot4, root));
-					flag = 1;
-					continue;
-				}
-				refresh();
-				lex.setNowPos(SavedLexPos4);
-				root = SavedRoot4;
-			}
-			lex.setNowPos(SavedLexPos3);
-			root = SavedRoot3;
-			SavedLexPos3 = lex.getNowPos();
-			SavedRoot3 = root;
-			ReadinToken3 = lex.readNextToken();
-			if (ReadinToken3.id == LEX_NEQ) {
-				auto SavedLexPos4 = lex.getNowPos();
-				auto SavedRoot4 = root;
-				if (parseSum()) {
-					root = shared_ptr<Node>(new NeqNode(SavedRoot4, root));
-					flag = 1;
-					continue;
-				}
-				refresh();
-				lex.setNowPos(SavedLexPos4);
-				root = SavedRoot4;
-			}
-			lex.setNowPos(SavedLexPos3);
-			root = SavedRoot3;
-			SavedLexPos3 = lex.getNowPos();
-			SavedRoot3 = root;
-			ReadinToken3 = lex.readNextToken();
-			if (ReadinToken3.id == LEX_EQ) {
-				auto SavedLexPos4 = lex.getNowPos();
-				auto SavedRoot4 = root;
-				if (parseSum()) {
-					root = shared_ptr<Node>(new EqNode(SavedRoot4, root));
 					flag = 1;
 					continue;
 				}
@@ -919,138 +1344,6 @@ bool parseFact() {
 		}
 	}
 	refresh();
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	return 0;
-}
-bool parseValueGroup() {
-	auto SavedLexPos1 = lex.getNowPos();
-	auto SavedRoot1 = root;
-	auto ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_LP) {
-		auto SavedLexPos2 = lex.getNowPos();
-		auto SavedRoot2 = root;
-		if (parseExpr()) {
-			auto SavedLexPos3 = lex.getNowPos();
-			auto SavedRoot3 = root;
-			auto ReadinToken3 = lex.readNextToken();
-			if (ReadinToken3.id == LEX_RP) {
-				return 1;
-			}
-			lex.setNowPos(SavedLexPos3);
-			root = SavedRoot3;
-		}
-		refresh();
-		lex.setNowPos(SavedLexPos2);
-		root = SavedRoot2;
-	}
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_REV) {
-		auto SavedLexPos2 = lex.getNowPos();
-		auto SavedRoot2 = root;
-		if (parseValue()) {
-			root = shared_ptr<Node>(new RevNode(root));
-			return 1;
-		}
-		refresh();
-		lex.setNowPos(SavedLexPos2);
-		root = SavedRoot2;
-	}
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_NOT) {
-		auto SavedLexPos2 = lex.getNowPos();
-		auto SavedRoot2 = root;
-		if (parseValue()) {
-			root = shared_ptr<Node>(new NotNode(root));
-			return 1;
-		}
-		refresh();
-		lex.setNowPos(SavedLexPos2);
-		root = SavedRoot2;
-	}
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_SUB) {
-		auto SavedLexPos2 = lex.getNowPos();
-		auto SavedRoot2 = root;
-		if (parseValue()) {
-			root = shared_ptr<Node>(new NegNode(root));
-			return 1;
-		}
-		refresh();
-		lex.setNowPos(SavedLexPos2);
-		root = SavedRoot2;
-	}
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	if (parseValue()) {
-		return 1;
-	}
-	refresh();
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	return 0;
-}
-bool parseValue() {
-	auto SavedLexPos1 = lex.getNowPos();
-	auto SavedRoot1 = root;
-	auto ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_ID) {
-		root = shared_ptr<Node>(new IDNode(ReadinToken1.name));
-		return 1;
-	}
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_STRING) {
-		root = shared_ptr<Node>(new ValueNode(ReadinToken1.name));
-		return 1;
-	}
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_REAL) {
-		root = shared_ptr<Node>(new ValueNode(_stod(ReadinToken1.name)));
-		return 1;
-	}
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_INT) {
-		root = shared_ptr<Node>(new ValueNode(_stoi(ReadinToken1.name)));
-		return 1;
-	}
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	return 0;
-}
-bool parseLValue() {
-	auto SavedLexPos1 = lex.getNowPos();
-	auto SavedRoot1 = root;
-	auto ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_ID) {
-		root = shared_ptr<Node>(new IDNode(ReadinToken1.name));
-		return 1;
-	}
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
 	return 0;

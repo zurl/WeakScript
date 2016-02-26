@@ -21,6 +21,8 @@ $Stmt
 $StmtBase
 | %BREAK								@ Break 0 @
 | %CONTINUE								@ Continue 0 @
+| %RETURN $Value						@ Return 1 root	 @
+| %RETURN								@ ReturnNull 1 root	 @				
 | $LValue %ASSIGN $Expr					@ Assign 2 SavedRoot3 root @
 | $LValue %ASSIGN $FuncDef				@ AssignFunc 2 SavedRoot3 root @
 | $Expr									@ # @
@@ -30,15 +32,49 @@ $StmtBase
 
 :RULE
 $FuncDef
-| %FUNC %LP $ArguDef %RP %LCB $Stmts %RCB	@ FuncDef 2 SavedRoot4 root @
+| %FUNC %LP $ArguDef %RP %LCB 
+ $Stmts %RCB							@ FuncDef 2 SavedRoot4 root @
 :RULEEND
 
 :RULE
 $ArguDef
-| %ID * %COM %ID @ ArguDef  2 SavedRoot4 root @
+| %ID * %COM %ID						@ ArguDef  2 SavedRoot4 root @
 :EMPTY
 :RULEEND
 
+
+:RULE
+$ValueGroup 
+| $Value								@ # @
+| %SUB $Value							@ Neg 1 root @
+| %NOT $Value							@ Not 1 root @
+| %REV $Value							@ Rev 1 root @
+| %LP $Expr %RP							@ # @
+:RULEEND
+
+:RULE
+$Value 
+| %INT									@ * Value string _stoi(ReadinToken1.name) @
+| %REAL									@ * Value string _stod(ReadinToken1.name) @
+| %STRING								@ * Value string ReadinToken1.name @
+| $LValue								@ # @
+| $LValue %LP $Argu %RP                 @ FuncCall 2 SavedRoot2 root @
+:RULEEND
+
+:RULE
+$Argu
+| $Value * %COM $Value					@ Argu 2 SavedRoot4 root @
+:EMPTY
+:RULEEND	
+
+:RULE
+$LValue 
+| %ID									@ * ID string ReadinToken1.name @
+:RULEEND
+
+
+	
+//Calulate rules
 
 :RULE
 $Expr 
@@ -47,13 +83,27 @@ $Expr
 
 :RULE
 $AndExpr
-| $CompExpr * %AND $CompExpr			@ And  2 SavedRoot4 root @
+| $BorExpr * %AND $BorExpr				@ And  2 SavedRoot4 root @
+:RULEEND
+
+:RULE
+$BorExpr 
+| $BandExpr * %BOR $BandExpr			@ Bor  2 SavedRoot4 root @
+:RULEEND
+
+:RULE
+$BandExpr
+| $EqCompExpr * %BAND $EqCompExpr		@ Band  2 SavedRoot4 root @
+:RULEEND
+
+:RULE
+$EqCompExpr
+| $CompExpr * %EQ  $CompExpr			@ Eq  2 SavedRoot4 root @
+| $CompExpr * %NEQ $CompExpr			@ Neq 2 SavedRoot4 root @
 :RULEEND
 
 :RULE
 $CompExpr
-| $Sum * %EQ  $Sum						@ Eq  2 SavedRoot4 root @
-| $Sum * %NEQ $Sum						@ Neq 2 SavedRoot4 root @
 | $Sum * %GT  $Sum						@ Gt  2 SavedRoot4 root @
 | $Sum * %LT  $Sum						@ Lt  2 SavedRoot4 root @
 | $Sum * %NGT $Sum						@ Ngt 2 SavedRoot4 root @
@@ -71,27 +121,4 @@ $Fact
 | $ValueGroup * %MUL $ValueGroup		@ Mul 2 SavedRoot4 root @
 | $ValueGroup * %DIV $ValueGroup		@ Div 2 SavedRoot4 root @
 | $ValueGroup * %MOD $ValueGroup		@ Mod 2 SavedRoot4 root @
-:RULEEND
-
-:RULE
-$ValueGroup 
-| $Value								@ # @
-| %SUB $Value							@ Neg 1 root @
-| %NOT $Value							@ Not 1 root @
-| %REV $Value							@ Rev 1 root @
-| %LP $Expr %RP							@ # @
-:RULEEND
-
-:RULE
-$Value 
-| %INT									@ * Value string _stoi(ReadinToken1.name) @
-| %REAL									@ * Value string _stod(ReadinToken1.name) @
-| %STRING								@ * Value string ReadinToken1.name @
-| %ID									@ * ID string ReadinToken1.name @
-| %ID %LP $Argu %RP                     @ FuncCall ReadinToken1.name root @
-:RULEEND
-
-:RULE
-$LValue 
-| %ID									@ * ID string ReadinToken1.name @
 :RULEEND

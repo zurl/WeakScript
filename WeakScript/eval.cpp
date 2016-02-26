@@ -30,6 +30,9 @@ class BreakException : public MyExpection {
 class ContinueException : public MyExpection {
 	
 };
+class ReturnException : public MyExpection {
+
+};
 class VariableTable {
 public:
 	VariableTable *prev;
@@ -64,6 +67,20 @@ public:
 	}
 };
 
+
+class Function {
+public:
+	bool mark;
+	shared_ptr<FuncDefNode> data;
+};
+class Object {
+public:
+	bool mark;
+	map<string, Value> data;
+};
+
+vector<Function *> FuncTable;
+vector<Object *> ObjTable;
 VariableTable *NowVarTable = new VariableTable();
 
 string itos(long long x) {
@@ -77,8 +94,107 @@ string dtos(double x) {
 	return os.str();
 }
 
+Value::Value() {
+	if (type == Type::Str)
+		delete data.Str;
+	type = Type::Null;
+}
+Value::Value(const string &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	this->type = Type::Str;
+	this->data.Str = new string(t);
+}
+Value::Value(const long long &t) {
+	if (type == Type::Str)
+		delete data.Str;
+
+	this->type = Type::Int;
+	this->data.Int = t;
+}
+Value::Value(const double &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	this->type = Type::Real;
+	this->data.Real = t;
+}
+Value::Value(const Value &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	switch (t.type) {
+	case Type::Int:
+		this->type = Type::Int;
+		this->data.Int = t.data.Int;
+		break;
+	case Type::Real:
+		this->type = Type::Real;
+		this->data.Real = t.data.Real;
+		break;
+	case Type::Str:
+		this->type = Type::Str;
+		this->data.Str = new string(*t.data.Str);
+		break;
+	case Type::Null:
+		this->type = Type::Null;
+		break;
+	case Type::Func:
+		this->type = Type::Func;
+		this->data.Func = t.data.Func;
+		break;
+	case Type::Obj:
+		this->type = Type::Obj;
+		this->data.Obj = t.data.Obj;
+	}
+}
+Value::~Value() {
+	if (type == Type::Str)
+		delete data.Str;
+	type = Type::Null;
+}
+Value & Value::operator= (const Value & t) {
+	if (type == Type::Str)
+		delete data.Str;
+	switch (t.type) {
+	case Type::Int:
+		this->type = Type::Int;
+		this->data.Int = t.data.Int;
+		break;
+	case Type::Real:
+		this->type = Type::Real;
+		this->data.Real = t.data.Real;
+		break;
+	case Type::Str:
+		this->type = Type::Str;
+		this->data.Str = new string(*t.data.Str);
+		break;
+	case Type::Null:
+		this->type = Type::Null;
+		break;
+	case Type::Func:
+		this->type = Type::Func;
+		this->data.Func = t.data.Func;
+		break;
+	case Type::Obj:
+		this->type = Type::Obj;
+		this->data.Obj = t.data.Obj;
+	}
+	return *this;
+}
+Value::Value(Function &t) {
+	/*if (type == Type::Str)
+		delete data.Str;
+	this->type == Type::Func;
+	this->data.Func = new shared_ptr<Function>(&t);*/
+}
+Value::Value(Object &t) {
+	/*if (type == Type::Str)
+		delete data.Str;
+	this->type == Type::Obj;
+	this->data.Obj = new shared_ptr<Object>(&t);*/
+}
+
 bool Value::isTrue() {
-	//All Type::
+	//All Type::  //To Modify
 	if (this->type == Type::Null)
 		return false;
 	if (this->type == Type::Int && this->data.Int == 0)
@@ -175,19 +291,19 @@ Value Value::operator~ () {
 		return Value(~this->data.Int);
 	throw CalTypeException(*this);
 }
-//Value Value::operator& (const Value &t){
-//	if (this->type == Type::Int && t.type == Type::Int)
-//		return Value(this->data.Int / t.data.Int);
-//	throw CalTypeException(*this, t);
-//}
-//Value Value::operator| (const Value &t){
-//	if (this->type == Type::Int && t.type == Type::Int)
-//		return Value(this->data.Int / t.data.Int);
-//	throw CalTypeException(*this, t);
-//}
+Value Value::operator& (const Value &t){
+	if (this->type == Type::Int && t.type == Type::Int)
+		return Value(this->data.Int / t.data.Int);
+	throw CalTypeException(*this, t);
+}
+Value Value::operator| (const Value &t){
+	if (this->type == Type::Int && t.type == Type::Int)
+		return Value(this->data.Int / t.data.Int);
+	throw CalTypeException(*this, t);
+}
 
 Value Value::operator!= (const Value &t) {
-	return Value((long long )!this->operator=(t).data.Int);
+	return Value((long long )!this->operator==(t).data.Int);
 }
 Value Value::operator== (const Value &t) {
 	if (this->type != t.type)
@@ -195,6 +311,8 @@ Value Value::operator== (const Value &t) {
 	if (this->type == Type::Int && this->data.Int == t.data.Int
 		|| this->type == Type::Real && this->data.Real == t.data.Real
 		|| this->type == Type::Str && *this->data.Str == *t.data.Str
+		|| this->type == Type::Func && this->data.Func == t.data.Func
+		|| this->type == Type::Func && this->data.Obj == t.data.Obj
 		)
 		return Value((long long)1);
 	return Value((long long)0);
@@ -330,6 +448,23 @@ Value WhileNode::eval() {
 		}
 	}
 }
+Value ForNode::eval() {
+	left->eval();
+	while (1) {
+		auto t = midleft->eval();
+		if (!t.isTrue())return Value();
+		try {
+			midright->eval();
+		}
+		catch (BreakException e) {
+			return Value();
+		}
+		catch (ContinueException e) {
+			//Continue;
+		}
+		right->eval();
+	}
+}
 Value IfElseNode::eval() {
 	if (left->eval().isTrue()) {
 		mid->eval();
@@ -347,6 +482,10 @@ Value IfNode::eval() {
 }
 Value ContinueNode::eval() {
 	throw ContinueException();
+	return Value();
+}
+Value ReturnNode::eval() {
+	//throw ReturnException(this->son);
 	return Value();
 }
 Value BreakNode::eval() {
@@ -377,6 +516,16 @@ Value OrNode::eval() {
 	}
 	return Value((long long)1);
 }
+Value BandNode::eval() {
+	Value t1 = left->eval();
+	Value t2 = right->eval();
+	return t1 & t2;
+}
+Value BorNode::eval() {
+	Value t1 = left->eval();
+	Value t2 = right->eval();
+	return t1 | t2;
+}
 Value DeclrNode::eval() {
 	NowVarTable->DefineVar(this->value);
 	return Value();
@@ -391,4 +540,8 @@ Value AssignNode::eval() {
 	temp = right->eval();
 	cout << "Assign : " << temp << endl;
 	return Value();
+}
+Value FuncDefNode::eval() {
+	FuncTable.emplace_back(new Function(*this));
+	return Value(*(FuncTable.end() - 1));
 }
