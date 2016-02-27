@@ -12,7 +12,10 @@ public:
 
 	}
 }; 
-class UnexpectRunTimeException : public MyExpection	 {
+class UnexpectRunTimeException : public MyExpection{
+
+};
+class UnableAssignValueException : public MyExpection {
 
 };
 class UndefinedVariableException : public MyExpection {
@@ -563,6 +566,8 @@ Value IDNode::eval() {
 extern ostream & operator<< (ostream & ,const Value & );
 
 Value AssignNode::eval() {
+	if (typeid(*this->left) != typeid(IDNode))
+		throw UnableAssignValueException();
 	Value & temp = NowVarTable->getVar(((IDNode *)((this->left).get()))->value);
 	temp = right->eval();
 	cout << "Assign : " << temp << endl;

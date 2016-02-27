@@ -51,78 +51,6 @@ void QuadNode::del() {
 	midright->del();
 	right->del();
 }
-Value::Value() {
-	if (type == Type::Str)
-		delete data.Str;
-	type = Type::Null;
-}
-Value::Value(const string &t) {
-	if (type == Type::Str)
-		delete data.Str;
-	this->type = Type::Str;
-	this->data.Str = new string(t);
-}
-Value::Value(const long long &t) {
-	if (type == Type::Str)
-		delete data.Str;
-
-	this->type = Type::Int;
-	this->data.Int = t;
-}
-Value::Value(const double &t) {
-	if (type == Type::Str)
-		delete data.Str;
-	this->type = Type::Real;
-	this->data.Real = t;
-}
-Value::Value(const Value &t) {
-	if (type == Type::Str)
-		delete data.Str;
-	switch (t.type) {
-	case Type::Int:
-		this->type = Type::Int;
-		this->data.Int = t.data.Int;
-		break;
-	case Type::Real:
-		this->type = Type::Real;
-		this->data.Real = t.data.Real;
-		break;
-	case Type::Str:
-		this->type = Type::Str;
-		this->data.Str = new string(*t.data.Str);
-		break;
-	case Type::Null:
-		this->type = Type::Null;
-		break;
-	}
-}
-Value::~Value() {
-	if (type == Type::Str)
-		delete data.Str;
-	type = Type::Null;
-}
-Value & Value::operator= (const Value & t) {
-	if (type == Type::Str)
-		delete data.Str;
-	switch (t.type) {
-	case Type::Int:
-		this->type = Type::Int;
-		this->data.Int = t.data.Int;
-		break;
-	case Type::Real:
-		this->type = Type::Real;
-		this->data.Real = t.data.Real;
-		break;
-	case Type::Str:
-		this->type = Type::Str;
-		this->data.Str = new string(*t.data.Str);
-		break;
-	case Type::Null:
-		this->type = Type::Null;
-		break;
-	}
-	return *this;
-}
 ostream& operator << (ostream &o, const Value& a) {
 	switch (a.type) {
 	case Value::Type::Int:
@@ -694,7 +622,7 @@ bool parseStmtBase(){
     root = SavedRoot1;
     SavedLexPos1 = lex.getNowPos(); 
     SavedRoot1 = root;
-    if (parseLValue()) {
+    if (parseValue()) {
         auto SavedLexPos2 = lex.getNowPos(); 
         auto SavedRoot2 = root;
         auto ReadinToken2 = lex.readNextToken();
@@ -993,7 +921,7 @@ bool parseValue(){
 bool parseArgu(){
     auto SavedLexPos1 = lex.getNowPos(); 
     auto SavedRoot1 = root;
-    if (parseValue()) {
+    if (parseExpr()) {
         int flag = 1;
         while (flag) {
             flag = 0;
@@ -1003,7 +931,7 @@ bool parseArgu(){
             if (ReadinToken3.id == LEX_COM) {
                 auto SavedLexPos4 = lex.getNowPos(); 
                 auto SavedRoot4 = root;
-                if (parseValue()) {
+                if (parseExpr()) {
                     root = shared_ptr<Node> (new ArguNode(SavedRoot4,root));
                     flag = 1;
                     continue;

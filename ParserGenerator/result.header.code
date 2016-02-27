@@ -63,7 +63,7 @@ public:
 	virtual void del();
 };
 class UnaryNode : public Node {
-protected:
+public:
 	shared_ptr<Node> son;
 public:
 	UnaryNode(shared_ptr<Node>  _s);
@@ -71,7 +71,7 @@ public:
 	virtual void del();
 };
 class BinaryNode : public Node {
-protected:
+public:
 	shared_ptr<Node> left, right;
 public:
 	BinaryNode(shared_ptr<Node>  _l, shared_ptr<Node>  _r);
@@ -79,7 +79,7 @@ public:
 	virtual void del();
 };
 class TernaryNode : public Node {
-protected:
+public:
 	shared_ptr<Node> left, mid, right;
 public:
 	TernaryNode(shared_ptr<Node> _l, shared_ptr<Node> _m, shared_ptr<Node> _r);
@@ -87,7 +87,7 @@ public:
 	virtual void del();
 };
 class QuadNode : public Node {
-protected:
+public:
 	shared_ptr<Node> left, midleft,midright, right;
 public:
 	QuadNode(shared_ptr<Node> _l, shared_ptr<Node> _ml, shared_ptr<Node> _mr, shared_ptr<Node> _r);

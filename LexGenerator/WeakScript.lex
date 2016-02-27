@@ -35,7 +35,7 @@ RETURN return
 FUNC func
 WHILE while
 BREAK break
-CONTINUE continue;
+CONTINUE continue
 
 #control symbol 
 

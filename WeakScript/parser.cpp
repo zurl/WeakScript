@@ -430,7 +430,7 @@ bool parseStmt() {
 			auto SavedLexPos3 = lex.getNowPos();
 			auto SavedRoot3 = root;
 			if (parseStmtBase()) {
-				auto SavedLexPos4 = lex.getNowPos();
+ 				auto SavedLexPos4 = lex.getNowPos();
 				auto SavedRoot4 = root;
 				auto ReadinToken4 = lex.readNextToken();
 				if (ReadinToken4.id == LEX_SEMI) {
@@ -616,17 +616,10 @@ bool parseStmtBase() {
 	}
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
+	
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
-	if (parseExpr()) {
-		return 1;
-	}
-	refresh();
-	lex.setNowPos(SavedLexPos1);
-	root = SavedRoot1;
-	SavedLexPos1 = lex.getNowPos();
-	SavedRoot1 = root;
-	if (parseLValue()) {
+	if (parseValue()) {
 		auto SavedLexPos2 = lex.getNowPos();
 		auto SavedRoot2 = root;
 		auto ReadinToken2 = lex.readNextToken();
@@ -690,6 +683,14 @@ bool parseStmtBase() {
 		root = shared_ptr<Node>(new BreakNode());
 		return 1;
 	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	if (parseExpr()) {
+		return 1;
+	}
+	refresh();
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
 	return 1;
@@ -925,7 +926,7 @@ bool parseValue() {
 bool parseArgu() {
 	auto SavedLexPos1 = lex.getNowPos();
 	auto SavedRoot1 = root;
-	if (parseValue()) {
+	if (parseExpr()) {
 		int flag = 1;
 		while (flag) {
 			flag = 0;
@@ -935,7 +936,7 @@ bool parseArgu() {
 			if (ReadinToken3.id == LEX_COM) {
 				auto SavedLexPos4 = lex.getNowPos();
 				auto SavedRoot4 = root;
-				if (parseValue()) {
+				if (parseExpr()) {
 					root = shared_ptr<Node>(new ArguNode(SavedRoot4, root));
 					flag = 1;
 					continue;

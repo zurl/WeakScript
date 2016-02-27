@@ -5,7 +5,7 @@ extern Lex lex;
 extern shared_ptr<Node> root;
 extern bool parseStmt();
 int main() {
-	if (parseStmt()) {		
+		if (parseStmt()) {		
 		root->visit(0);
 		root->eval();
 		return 1;

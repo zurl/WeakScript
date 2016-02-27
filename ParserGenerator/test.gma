@@ -19,13 +19,13 @@ $Stmt
 
 :RULE
 $StmtBase
+| $Expr									@ # @
 | %BREAK								@ Break 0 @
 | %CONTINUE								@ Continue 0 @
 | %RETURN $Value						@ Return 1 root	 @
 | %RETURN								@ ReturnNull 1 root	 @				
-| $LValue %ASSIGN $Expr					@ Assign 2 SavedRoot3 root @
-| $LValue %ASSIGN $FuncDef				@ Assign 2 SavedRoot3 root @
-| $Expr									@ # @
+| $Value %ASSIGN $Expr					@ Assign 2 SavedRoot3 root @
+| $Value %ASSIGN $FuncDef				@ Assign 2 SavedRoot3 root @
 | %VAR %ID								@ * Declr string ReadinToken2.name @
 :EMPTY
 :RULEEND

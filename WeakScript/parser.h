@@ -187,6 +187,7 @@ public:
 	FuncDefNode(shared_ptr<Node> a, shared_ptr<Node> b);
 	virtual void visit(int x);
 	virtual Value eval();
+	//sp
 };
 class ArguDefNode : public BinaryNode {
 public:
