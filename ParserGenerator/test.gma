@@ -22,7 +22,7 @@ $StmtBase
 | $Expr									@ # @
 | %BREAK								@ Break 0 @
 | %CONTINUE								@ Continue 0 @
-| %RETURN $Value						@ Return 1 root	 @
+| %RETURN $Expr							@ Return 1 root	 @
 | %RETURN								@ ReturnNull 1 root	 @				
 | $Value %ASSIGN $Expr					@ Assign 2 SavedRoot3 root @
 | $Value %ASSIGN $FuncDef				@ Assign 2 SavedRoot3 root @
@@ -38,7 +38,7 @@ $FuncDef
 
 :RULE
 $ArguDef
-| %ID * %COM %ID						@ ArguDef  2 SavedRoot4 root @
+| $LValue * %COM $LValue				@ ArguDef  2 SavedRoot4 root @
 :EMPTY
 :RULEEND
 

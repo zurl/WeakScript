@@ -68,6 +68,14 @@ public:
 	void visitson(int x);
 	virtual void del();
 };
+typedef Value(*SysFunc)();
+class SysFuncNode : public UnitNode {
+public:
+	SysFunc func;
+	SysFuncNode(SysFunc x);
+	virtual void visit(int x);
+	virtual Value eval();
+};
 class UnaryNode : public Node {
 public:
 	shared_ptr<Node> son;
@@ -319,6 +327,12 @@ public:
 class MulNode : public BinaryNode {
 public:
 	MulNode(shared_ptr<Node> a, shared_ptr<Node> b);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+class NullNode : public UnitNode {
+public:
+	NullNode();
 	virtual void visit(int x);
 	virtual Value eval();
 };

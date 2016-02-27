@@ -1,10 +1,16 @@
 #include "parser.h"
 Lex lex("test.ws");
-shared_ptr<Node>  root = nullptr;
+shared_ptr<Node> root = shared_ptr<Node> (new NullNode());
 UnitNode::UnitNode() {}
 void UnitNode::visitson(int x) {}
 void UnitNode::del() {}
-
+NullNode::NullNode():UnitNode(){}
+Value NullNode::eval() { return Value(); }
+void NullNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Null Node" << endl;
+	this->visitson(x + 1);
+}
 UnaryNode::UnaryNode(shared_ptr<Node> _s)
 	:son(_s) {}
 void UnaryNode::visitson(int x) {
@@ -99,9 +105,9 @@ void ValueNode::visit(int x) {
 	this->visitson(x + 1);
 }
 void refresh() {
-	if (root == nullptr)return;
+	//if (root == nullptr)return;
 	root->del();
-	root = nullptr;
+	root = shared_ptr<Node>(new NullNode());
 };
 double _stod(string x) {
 	istringstream is(x);
@@ -655,7 +661,7 @@ bool parseStmtBase() {
 	if (ReadinToken1.id == LEX_RETURN) {
 		auto SavedLexPos2 = lex.getNowPos();
 		auto SavedRoot2 = root;
-		if (parseValue()) {
+		if (parseExpr()) {
 			root = shared_ptr<Node>(new ReturnNode(root));
 			return 1;
 		}
@@ -749,11 +755,11 @@ bool parseFuncDef() {
 	root = SavedRoot1;
 	return 0;
 }
+
 bool parseArguDef() {
 	auto SavedLexPos1 = lex.getNowPos();
 	auto SavedRoot1 = root;
-	auto ReadinToken1 = lex.readNextToken();
-	if (ReadinToken1.id == LEX_ID) {
+	if (parseLValue()) {
 		int flag = 1;
 		while (flag) {
 			flag = 0;
@@ -763,12 +769,12 @@ bool parseArguDef() {
 			if (ReadinToken3.id == LEX_COM) {
 				auto SavedLexPos4 = lex.getNowPos();
 				auto SavedRoot4 = root;
-				auto ReadinToken4 = lex.readNextToken();
-				if (ReadinToken4.id == LEX_ID) {
+				if (parseLValue()) {
 					root = shared_ptr<Node>(new ArguDefNode(SavedRoot4, root));
 					flag = 1;
 					continue;
 				}
+				refresh();
 				lex.setNowPos(SavedLexPos4);
 				root = SavedRoot4;
 			}
@@ -777,8 +783,10 @@ bool parseArguDef() {
 			return 1;
 		}
 	}
+	refresh();
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
+	refresh();
 	return 1;
 }
 bool parseValueGroup() {
@@ -953,6 +961,7 @@ bool parseArgu() {
 	refresh();
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
+	refresh();
 	return 1;
 }
 bool parseLValue() {

@@ -570,13 +570,14 @@ Value AssignNode::eval() {
 		throw UnableAssignValueException();
 	Value & temp = NowVarTable->getVar(((IDNode *)((this->left).get()))->value);
 	temp = right->eval();
-	cout << "Assign : " << temp << endl;
 	return Value();
 }
 Value FuncDefNode::eval() {
 	FuncTable.emplace_back(new Function(*this));
 	return Value(*(FuncTable.end() - 1));
 }
+vector<string> FuncCallTmp;
+int FuncCallTmpNow;
 Value FuncCallNode::eval() {
 	//var check
 	auto var = NowVarTable->getVar(((IDNode *)left.get())->value);
@@ -585,38 +586,29 @@ Value FuncCallNode::eval() {
 		throw UnableCallVarException(((IDNode *)left.get())->value);
 	//read args list & create variable;
 	NowVarTable = new VariableTable(NowVarTable);
-	//NOT NULL SPEC
-	//add argu//
-	bool EmptyFlag = 0;
-	if (var.data.Func->data->left != nullptr) {
-		auto defnow = (ArguDefNode*)(var.data.Func->data->left.get());
-		auto readnow = (ArguNode*)right.get();
-		if (readnow == nullptr )
-			EmptyFlag = 1;
-		while ( typeid(*defnow->right.get()) == typeid(ArguDefNode)){
-			//ReadInOneArgu
-			auto name =((IDNode*)(defnow->left.get()))->value;
-			NowVarTable->DefineVar(name);
-			if (!EmptyFlag) {
-				if (typeid(*readnow->right.get()) != typeid(ArguNode))
-					NowVarTable->getVar(name) = ((IDNode *)readnow)->value;
-				else NowVarTable->getVar(name) = readnow->left->eval();
-				readnow = (ArguNode*)readnow->right.get();
-				if(readnow == nullptr)EmptyFlag = 1;
-			}
-			defnow = (ArguDefNode*)defnow->right.get();
+	//Argus
+	//null
+	FuncCallTmp = vector<string>(); FuncCallTmpNow = 0;
+	auto func = var.data.Func->data;
+	if (typeid(*func->left) == typeid(NullNode)) {
+		//
+	}
+	//sigle
+	else if (typeid(*func->left) == typeid(IDNode)) {
+		NowVarTable->DefineVar(((IDNode *)func->left.get())->value);
+		FuncCallTmp.emplace_back(((IDNode *)func->left.get())->value);
+		if (typeid(*this->right) != typeid(ArguNode)) {
+			NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow]) = this->right->eval();
 		}
-		//single
-		auto name = ((IDNode*)defnow)->value;
-		NowVarTable->DefineVar(name);
-		if (!EmptyFlag) {
-			if (typeid(*readnow->right.get()) != typeid(ArguNode))
-				NowVarTable->getVar(name) = ((IDNode *)readnow)->value;
-			else NowVarTable->getVar(name) = readnow->left->eval();
-			readnow = (ArguNode*)readnow->right.get();
-			if (readnow == nullptr)EmptyFlag = 1;
+		else this->right->eval();
+	}
+	//more
+	else {
+		func->left->eval();
+		if (typeid(*this->right) != typeid(ArguNode)) {
+			NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow]) = this->right->eval();
 		}
-		defnow = (ArguDefNode*)defnow->right.get();
+		else this->right->eval();
 	}
 	//render;
 	try {
@@ -632,10 +624,89 @@ Value FuncCallNode::eval() {
 	return Value();
 }
 Value ArguDefNode::eval() {
-	throw UnexpectRunTimeException();
+	NowVarTable->DefineVar(((IDNode *)left.get())->value);
+	FuncCallTmp.emplace_back(((IDNode *)left.get())->value);
+	if (typeid(*right) == typeid(IDNode)) {
+		NowVarTable->DefineVar(((IDNode *)right.get())->value);
+		FuncCallTmp.emplace_back(((IDNode *)right.get())->value);
+	}
+	else right->eval();
 	return Value();
 }
 Value ArguNode::eval() {
-	throw UnexpectRunTimeException();
+	if (typeid(*this->left) != typeid(ArguNode)) {
+		FuncCallTmpNow++;
+		NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow-1]) = this->left->eval();
+		if (FuncCallTmpNow  == FuncCallTmp.size())
+			return Value();
+		FuncCallTmpNow++;
+		NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow - 1]) = this->right->eval();
+	}
+	else {
+		this->left->eval();
+		if (FuncCallTmpNow  == FuncCallTmp.size())
+			return Value();
+		FuncCallTmpNow++;
+		NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow - 1]) = this->right->eval();
+	}
 	return Value();
 }
+
+SysFuncNode::SysFuncNode(SysFunc x)
+	:func(x) {}
+void SysFuncNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "SysFunc Node" << endl;
+	this->visitson(x + 1);
+}
+Value SysFuncNode::eval() {
+	return func();
+}
+void addSysFunc(string name,vector<string> args,SysFunc func) {
+	NowVarTable->DefineVar(name);
+	shared_ptr<Node> arugs;
+	//null;
+	if (args.size() == 0)arugs = shared_ptr<Node>(new NullNode());
+	//one
+	else if (args.size() == 1) arugs = shared_ptr<Node>(new IDNode(args[0]));
+	//more
+	else {
+		arugs = shared_ptr<Node>(new ArguDefNode(
+			shared_ptr<Node>(new IDNode(args[0])),
+			shared_ptr<Node>(new IDNode(args[1]))));
+		for (int i = 2; i <= args.size() - 1; i++) {
+			arugs = shared_ptr<Node>(new ArguDefNode(arugs, shared_ptr<Node>(new IDNode(args[i]))));
+		}
+	}
+	NowVarTable->getVar(name).type = Value::Type::Func;
+	NowVarTable->getVar(name).data.Func = new Function(*new FuncDefNode(arugs, shared_ptr<Node>(new SysFuncNode(func))));
+}
+Value SysPrint() {
+	// Value print(x)
+	cout << NowVarTable->getVar("x");
+	return Value();
+}
+Value SysReadInt() {
+	long long x;
+	cin >> x;
+	throw ReturnException(Value((x)));
+	return Value();
+}
+Value SysReadStr() {
+	string x;
+	cin >> x;
+	throw ReturnException(Value((x)));
+	return Value();
+}
+Value SysReadReal() {
+	long long x;
+	cin >> x;
+	throw ReturnException(Value((x)));
+	return Value();
+}
+void initSysFunc() {	
+	addSysFunc("print", {"x"}, SysPrint);
+	addSysFunc("readint", {}, SysReadInt);
+	addSysFunc("readstr", {}, SysReadStr);
+	addSysFunc("readreal", {}, SysReadReal);
+}	

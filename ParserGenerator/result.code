@@ -614,14 +614,6 @@ bool parseStmtBase(){
     root = SavedRoot1;
     SavedLexPos1 = lex.getNowPos(); 
     SavedRoot1 = root;
-    if (parseExpr()) {
-        return 1;
-    }
-    refresh();
-    lex.setNowPos(SavedLexPos1);
-    root = SavedRoot1;
-    SavedLexPos1 = lex.getNowPos(); 
-    SavedRoot1 = root;
     if (parseValue()) {
         auto SavedLexPos2 = lex.getNowPos(); 
         auto SavedRoot2 = root;
@@ -658,7 +650,7 @@ bool parseStmtBase(){
     if (ReadinToken1.id == LEX_RETURN) {
         auto SavedLexPos2 = lex.getNowPos(); 
         auto SavedRoot2 = root;
-        if (parseValue()) {
+        if (parseExpr()) {
             root = shared_ptr<Node> (new ReturnNode(root));
             return 1;
         }
@@ -686,6 +678,14 @@ bool parseStmtBase(){
         root = shared_ptr<Node> (new BreakNode());
         return 1;
     }
+    lex.setNowPos(SavedLexPos1);
+    root = SavedRoot1;
+    SavedLexPos1 = lex.getNowPos(); 
+    SavedRoot1 = root;
+    if (parseExpr()) {
+        return 1;
+    }
+    refresh();
     lex.setNowPos(SavedLexPos1);
     root = SavedRoot1;
     return 1;
@@ -747,8 +747,7 @@ bool parseFuncDef(){
 bool parseArguDef(){
     auto SavedLexPos1 = lex.getNowPos(); 
     auto SavedRoot1 = root;
-    auto ReadinToken1 = lex.readNextToken();
-    if (ReadinToken1.id == LEX_ID) {
+    if (parseLValue()) {
         int flag = 1;
         while (flag) {
             flag = 0;
@@ -758,12 +757,12 @@ bool parseArguDef(){
             if (ReadinToken3.id == LEX_COM) {
                 auto SavedLexPos4 = lex.getNowPos(); 
                 auto SavedRoot4 = root;
-                auto ReadinToken4 = lex.readNextToken();
-                if (ReadinToken4.id == LEX_ID) {
+                if (parseLvalue()) {
                     root = shared_ptr<Node> (new ArguDefNode(SavedRoot4,root));
                     flag = 1;
                     continue;
                 }
+                refresh();
                 lex.setNowPos(SavedLexPos4);
                 root = SavedRoot4;
             }
@@ -772,6 +771,7 @@ bool parseArguDef(){
             return 1;
         }
     }
+    refresh();
     lex.setNowPos(SavedLexPos1);
     root = SavedRoot1;
     return 1;

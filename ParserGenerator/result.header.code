@@ -3,13 +3,18 @@
 #include "Lex.h"
 #ifndef PARSER_H
 #define PARSER_H
+class Function;
+class Object;
 class Value {
+
 public:
 	Value();
 	Value(const string &t);
 	Value(const long long &t);
 	Value(const double &t);
 	Value(const Value &t);
+	Value(Function *t);
+	Value(Object *t);
 	~Value();
 
 	Value & operator= (const Value & t);
@@ -26,8 +31,8 @@ public:
 
 	Value operator- ();
 	Value operator~ ();
-	//Value operator& (const Value & t);
-	//Value operator| (const Value & t);
+	Value operator& (const Value & t);
+	Value operator| (const Value & t);
 
 
 	Value operator!= (const Value & t);
@@ -39,21 +44,22 @@ public:
 
 	bool isTrue();
 	enum class Type {
-		Null, Int, Real, Str, Ref
+		Null, Int, Real, Str, Obj ,Func
 	};
 	Type type;
 	union {
 		long long Int;
 		double Real;
 		string * Str;
-		long long Object;
-	} data;
+		Function * Func;
+		Object * Obj;
+	}data;
 };
 class Node {
 public:
-	virtual void visit(int x)=0;
-	virtual void del()=0;
-	virtual Value eval()=0;
+	virtual void visit(int x) = 0;
+	virtual void del() = 0;
+	virtual Value eval() = 0;
 };
 
 class UnitNode : public Node {
@@ -88,7 +94,7 @@ public:
 };
 class QuadNode : public Node {
 public:
-	shared_ptr<Node> left, midleft,midright, right;
+	shared_ptr<Node> left, midleft, midright, right;
 public:
 	QuadNode(shared_ptr<Node> _l, shared_ptr<Node> _ml, shared_ptr<Node> _mr, shared_ptr<Node> _r);
 	void visitson(int x);
@@ -100,6 +106,13 @@ public:
 	ValueNode(string _value);
 	ValueNode(double _value);
 	ValueNode(long long _value);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+
+class NullNode : public UnitNode {
+public:
+	NullNode();
 	virtual void visit(int x);
 	virtual Value eval();
 };
