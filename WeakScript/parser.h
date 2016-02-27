@@ -3,8 +3,8 @@
 #include "Lex.h"
 #ifndef PARSER_H
 #define PARSER_H
-extern class Function;
-extern class Object;
+class Function;
+class Object;
 class Value {
 
 public:
@@ -13,8 +13,8 @@ public:
 	Value(const long long &t);
 	Value(const double &t);
 	Value(const Value &t);
-	Value(Function &t);
-	Value(Object &t);
+	Value(Function *t);
+	Value(Object *t);
 	~Value();
 
 	Value & operator= (const Value & t);
@@ -69,7 +69,7 @@ public:
 	virtual void del();
 };
 class UnaryNode : public Node {
-protected:
+public:
 	shared_ptr<Node> son;
 public:
 	UnaryNode(shared_ptr<Node>  _s);
@@ -77,7 +77,7 @@ public:
 	virtual void del();
 };
 class BinaryNode : public Node {
-protected:
+public:
 	shared_ptr<Node> left, right;
 public:
 	BinaryNode(shared_ptr<Node>  _l, shared_ptr<Node>  _r);
@@ -85,7 +85,7 @@ public:
 	virtual void del();
 };
 class TernaryNode : public Node {
-protected:
+public:
 	shared_ptr<Node> left, mid, right;
 public:
 	TernaryNode(shared_ptr<Node> _l, shared_ptr<Node> _m, shared_ptr<Node> _r);
@@ -93,7 +93,7 @@ public:
 	virtual void del();
 };
 class QuadNode : public Node {
-protected:
+public:
 	shared_ptr<Node> left, midleft, midright, right;
 public:
 	QuadNode(shared_ptr<Node> _l, shared_ptr<Node> _ml, shared_ptr<Node> _mr, shared_ptr<Node> _r);
@@ -149,12 +149,6 @@ class DeclrNode : public UnitNode {
 public:
 	string value;
 	DeclrNode(string _value);
-	virtual void visit(int x);
-	virtual Value eval();
-};
-class AssignFuncNode : public BinaryNode {
-public:
-	AssignFuncNode(shared_ptr<Node> a, shared_ptr<Node> b);
 	virtual void visit(int x);
 	virtual Value eval();
 };

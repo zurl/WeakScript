@@ -11,10 +11,19 @@ public:
 	CalTypeException(Value a) {
 
 	}
+}; 
+class UnexpectRunTimeException : public MyExpection	 {
+
 };
 class UndefinedVariableException : public MyExpection {
 public:
 	UndefinedVariableException(string name) {
+
+	}
+};
+class UnableCallVarException : public MyExpection {
+public:
+	UnableCallVarException(string name) {
 
 	}
 };
@@ -31,7 +40,18 @@ class ContinueException : public MyExpection {
 	
 };
 class ReturnException : public MyExpection {
-
+private:
+	Value data;
+public:
+	ReturnException() {
+		this->data = Value();
+	}
+	ReturnException(Value x) {
+		this->data = x;
+	}
+	Value getValue() {
+		return this->data;
+	}
 };
 class VariableTable {
 public:
@@ -53,7 +73,7 @@ public:
 		}
 		throw RedefinedVariableException(name);
 	}
-	Value & getVar( string name ) throw(MyExpection) {
+	Value & getVar( string name )  {
 		auto t = table.find(name);
 		if (t == table.end()) {
 			if (prev == nullptr)
@@ -72,6 +92,9 @@ class Function {
 public:
 	bool mark;
 	shared_ptr<FuncDefNode> data;
+	Function(FuncDefNode & t) {
+		data = shared_ptr<FuncDefNode>(&t);
+	}
 };
 class Object {
 public:
@@ -180,17 +203,17 @@ Value & Value::operator= (const Value & t) {
 	}
 	return *this;
 }
-Value::Value(Function &t) {
-	/*if (type == Type::Str)
+Value::Value(Function *t) {
+	if (type == Type::Str)
 		delete data.Str;
-	this->type == Type::Func;
-	this->data.Func = new shared_ptr<Function>(&t);*/
+	this->type = Type::Func;
+	this->data.Func = t;
 }
-Value::Value(Object &t) {
-	/*if (type == Type::Str)
+Value::Value(Object *t) {
+	if (type == Type::Str)
 		delete data.Str;
-	this->type == Type::Obj;
-	this->data.Obj = new shared_ptr<Object>(&t);*/
+	this->type = Type::Obj;
+	this->data.Obj = t;
 }
 
 bool Value::isTrue() {
@@ -440,10 +463,10 @@ Value WhileNode::eval() {
 		try {
 			right->eval();
 		}
-		catch (BreakException e) {
+		catch (BreakException) {
 			return Value();
 		}
-		catch (ContinueException e) {
+		catch (ContinueException) {
 			//Continue;
 		}
 	}
@@ -456,10 +479,10 @@ Value ForNode::eval() {
 		try {
 			midright->eval();
 		}
-		catch (BreakException e) {
+		catch (BreakException) {
 			return Value();
 		}
-		catch (ContinueException e) {
+		catch (ContinueException) {
 			//Continue;
 		}
 		right->eval();
@@ -485,7 +508,11 @@ Value ContinueNode::eval() {
 	return Value();
 }
 Value ReturnNode::eval() {
-	//throw ReturnException(this->son);
+	throw ReturnException(this->son->eval());
+	return Value();
+}
+Value ReturnNullNode::eval() {
+	throw ReturnException();
 	return Value();
 }
 Value BreakNode::eval() {
@@ -544,4 +571,66 @@ Value AssignNode::eval() {
 Value FuncDefNode::eval() {
 	FuncTable.emplace_back(new Function(*this));
 	return Value(*(FuncTable.end() - 1));
+}
+Value FuncCallNode::eval() {
+	//var check
+	auto var = NowVarTable->getVar(((IDNode *)left.get())->value);
+	//func check;
+	if (var.type != Value::Type::Func)
+		throw UnableCallVarException(((IDNode *)left.get())->value);
+	//read args list & create variable;
+	NowVarTable = new VariableTable(NowVarTable);
+	//NOT NULL SPEC
+	//add argu//
+	bool EmptyFlag = 0;
+	if (var.data.Func->data->left != nullptr) {
+		auto defnow = (ArguDefNode*)(var.data.Func->data->left.get());
+		auto readnow = (ArguNode*)right.get();
+		if (readnow == nullptr )
+			EmptyFlag = 1;
+		while ( typeid(*defnow->right.get()) == typeid(ArguDefNode)){
+			//ReadInOneArgu
+			auto name =((IDNode*)(defnow->left.get()))->value;
+			NowVarTable->DefineVar(name);
+			if (!EmptyFlag) {
+				if (typeid(*readnow->right.get()) != typeid(ArguNode))
+					NowVarTable->getVar(name) = ((IDNode *)readnow)->value;
+				else NowVarTable->getVar(name) = readnow->left->eval();
+				readnow = (ArguNode*)readnow->right.get();
+				if(readnow == nullptr)EmptyFlag = 1;
+			}
+			defnow = (ArguDefNode*)defnow->right.get();
+		}
+		//single
+		auto name = ((IDNode*)defnow)->value;
+		NowVarTable->DefineVar(name);
+		if (!EmptyFlag) {
+			if (typeid(*readnow->right.get()) != typeid(ArguNode))
+				NowVarTable->getVar(name) = ((IDNode *)readnow)->value;
+			else NowVarTable->getVar(name) = readnow->left->eval();
+			readnow = (ArguNode*)readnow->right.get();
+			if (readnow == nullptr)EmptyFlag = 1;
+		}
+		defnow = (ArguDefNode*)defnow->right.get();
+	}
+	//render;
+	try {
+		var.data.Func->data->right->eval();
+	}
+	catch (ReturnException e) {
+		auto tmp = NowVarTable;
+		NowVarTable = NowVarTable->prev;
+		delete tmp;
+		return e.getValue();
+	}
+	//return //
+	return Value();
+}
+Value ArguDefNode::eval() {
+	throw UnexpectRunTimeException();
+	return Value();
+}
+Value ArguNode::eval() {
+	throw UnexpectRunTimeException();
+	return Value();
 }

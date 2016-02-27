@@ -146,12 +146,6 @@ public:
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
-class AssignFuncNode : public BinaryNode {
-public:
-    AssignFuncNode(shared_ptr<Node> a,shared_ptr<Node> b);
-    virtual void visit(int x) ;
-    virtual Value eval() ;
-};
 class AssignNode : public BinaryNode {
 public:
     AssignNode(shared_ptr<Node> a,shared_ptr<Node> b);

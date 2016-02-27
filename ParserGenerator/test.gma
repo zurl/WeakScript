@@ -24,7 +24,7 @@ $StmtBase
 | %RETURN $Value						@ Return 1 root	 @
 | %RETURN								@ ReturnNull 1 root	 @				
 | $LValue %ASSIGN $Expr					@ Assign 2 SavedRoot3 root @
-| $LValue %ASSIGN $FuncDef				@ AssignFunc 2 SavedRoot3 root @
+| $LValue %ASSIGN $FuncDef				@ Assign 2 SavedRoot3 root @
 | $Expr									@ # @
 | %VAR %ID								@ * Declr string ReadinToken2.name @
 :EMPTY
@@ -63,7 +63,7 @@ $Value
 
 :RULE
 $Argu
-| $Value * %COM $Value					@ Argu 2 SavedRoot4 root @
+| $Expr * %COM $Expr					@ Argu 2 SavedRoot4 root @
 :EMPTY
 :RULEEND	
 
