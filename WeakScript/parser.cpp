@@ -1,6 +1,8 @@
 #include "parser.h"
 Lex lex("test.ws");
 shared_ptr<Node> root = shared_ptr<Node>(new NullNode());
+map<string, int> IdHashTable;
+int IdHashTableNow = 0;
 UnitNode::UnitNode() {}
 void UnitNode::visitson(int x) {}
 void UnitNode::del() {}
@@ -165,7 +167,12 @@ void BlockNode::visit(int x) {
 }
 DeclrNode::DeclrNode(string _value)
 	:UnitNode() {
-	value = _value;
+	auto t = IdHashTable.find(_value);
+	if (t == IdHashTable.end()) {
+		IdHashTable.emplace(_value, ++IdHashTableNow);
+		value = IdHashTableNow;
+	}
+	else value = t->second;
 }
 void DeclrNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
@@ -257,6 +264,15 @@ void ArguNode::visit(int x) {
 	this->visitson(x + 1);
 }
 IDNode::IDNode(string _value)
+	:UnitNode() {
+	auto t = IdHashTable.find(_value);
+	if (t == IdHashTable.end()) {
+		IdHashTable.emplace(_value, ++IdHashTableNow);
+		value = IdHashTableNow;
+	}
+	else value = t->second;	
+}
+IDNode::IDNode(int _value)
 	:UnitNode() {
 	value = _value;
 }

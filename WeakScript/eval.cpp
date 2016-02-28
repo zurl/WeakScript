@@ -20,19 +20,19 @@ class UnableAssignValueException : public MyExpection {
 };
 class UndefinedVariableException : public MyExpection {
 public:
-	UndefinedVariableException(string name) {
+	UndefinedVariableException(int name) {
 
 	}
 };
 class UnableCallVarException : public MyExpection {
 public:
-	UnableCallVarException(string name) {
+	UnableCallVarException(int name) {
 
 	}
 };
 class RedefinedVariableException : public MyExpection {
 public:
-	RedefinedVariableException(string name) {
+	RedefinedVariableException(int name) {
 
 	}
 };
@@ -60,20 +60,20 @@ public:
 class VariableTable {
 public:
 	VariableTable *prev;
-	unordered_map<std::string, Value> table;
+	map<int,Value*> table;
 	VariableTable() {
 		prev = nullptr;
 	}
 	VariableTable(VariableTable * t) {
 		prev = t;
 	}
-	void DefineVar( string name ) {
+	void DefineVar( int name ) {
 		auto t = table.find(name);
 		if (t != table.end()) 
 			throw RedefinedVariableException(name);
-		this->table.emplace(name, Value());	
+		this->table.emplace(name, new Value());	
 	}
-	Value & getVar( const string & name )  {
+	Value & getVar( const int & name )  {
 		auto t = table.find(name);
 		if (t == table.end()) {
 			if (prev == nullptr)
@@ -82,7 +82,7 @@ public:
 				return prev->getVar(name);
 		}
 		else {
-			return t->second;
+			return *t->second;
 		}
 	}
 };
@@ -573,7 +573,7 @@ Value FuncDefNode::eval() {
 	FuncTable.emplace_back(new Function(*this));
 	return Value(*(FuncTable.end() - 1));
 }
-vector<string> FuncCallTmp;
+vector<int> FuncCallTmp;
 int FuncCallTmpNow;
 Value FuncCallNode::eval() {
 	//var check
@@ -585,7 +585,7 @@ Value FuncCallNode::eval() {
 	NowVarTable = new VariableTable(NowVarTable);
 	//Argus
 	//null
-	FuncCallTmp = vector<string>(); FuncCallTmpNow = 0;
+	FuncCallTmp = vector<int>(); FuncCallTmpNow = 0;
 	auto func = var.data.Func->data;
 	if (typeid(*func->left) == typeid(NullNode)) {
 		//
@@ -662,7 +662,11 @@ void SysFuncNode::visit(int x) {
 Value SysFuncNode::eval() {
 	return func();
 }
-void addSysFunc(string name,vector<string> args,SysFunc func) {
+extern map<string,int> IdHashTable;
+extern int IdHashTableNow;
+void addSysFunc(int name,vector<int> args,SysFunc func) {
+	//define var
+
 	NowVarTable->DefineVar(name);
 	shared_ptr<Node> arugs;
 	//null;
@@ -683,7 +687,7 @@ void addSysFunc(string name,vector<string> args,SysFunc func) {
 }
 Value SysPrint() {
 	// Value print(x)
-	cout << NowVarTable->getVar("x");
+	cout << NowVarTable->getVar(2);
 	throw ReturnException();
 	return Value();
 }
@@ -705,9 +709,14 @@ Value SysReadReal() {
 	throw ReturnException(Value((x)));
 	return Value();
 }
-void initSysFunc() {	
-	addSysFunc("print", {"x"}, SysPrint);
-	addSysFunc("readint", {}, SysReadInt);
-	addSysFunc("readstr", {}, SysReadStr);
-	addSysFunc("readreal", {}, SysReadReal);
+void initSysFunc() {
+	IdHashTable.emplace("print",1); IdHashTable.emplace("x",2);
+	addSysFunc(1, {2}, SysPrint);
+	IdHashTable.emplace("readint",3);
+	addSysFunc(3, {}, SysReadInt);
+	IdHashTable.emplace("readstr",4);
+	addSysFunc(4, {}, SysReadStr);
+	IdHashTable.emplace("readreal",5);
+	addSysFunc(5, {}, SysReadReal);
+	IdHashTableNow = 5;
 }	

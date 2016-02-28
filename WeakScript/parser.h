@@ -155,7 +155,7 @@ public:
 };
 class DeclrNode : public UnitNode {
 public:
-	string value;
+	int value;
 	DeclrNode(string _value);
 	virtual void visit(int x);
 	virtual Value eval();
@@ -235,8 +235,9 @@ public:
 };
 class IDNode : public UnitNode {
 public:
-	string value;
+	int value;
 	IDNode(string _value);
+		IDNode(int _value);
 	virtual void visit(int x);
 	virtual Value eval();
 };
