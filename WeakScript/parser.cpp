@@ -1,10 +1,10 @@
 #include "parser.h"
 Lex lex("test.ws");
-shared_ptr<Node> root = shared_ptr<Node> (new NullNode());
+shared_ptr<Node> root = shared_ptr<Node>(new NullNode());
 UnitNode::UnitNode() {}
 void UnitNode::visitson(int x) {}
 void UnitNode::del() {}
-NullNode::NullNode():UnitNode(){}
+NullNode::NullNode() :UnitNode() {}
 Value NullNode::eval() { return Value(); }
 void NullNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
@@ -436,7 +436,7 @@ bool parseStmt() {
 			auto SavedLexPos3 = lex.getNowPos();
 			auto SavedRoot3 = root;
 			if (parseStmtBase()) {
- 				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedLexPos4 = lex.getNowPos();
 				auto SavedRoot4 = root;
 				auto ReadinToken4 = lex.readNextToken();
 				if (ReadinToken4.id == LEX_SEMI) {
@@ -622,7 +622,7 @@ bool parseStmtBase() {
 	}
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
-	
+
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
 	if (parseValue()) {

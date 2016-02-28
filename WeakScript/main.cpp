@@ -4,11 +4,11 @@
 extern Lex lex;
 extern shared_ptr<Node> root;
 extern bool parseStmt();
-extern void initSysFunc			();
+extern void initSysFunc();
 int main() {
-	initSysFunc();
+		initSysFunc();
 	if (parseStmt()) {		
-		root->visit(0);
+		//root->visit(0);
 		root->eval();
 		return 1;
 	}

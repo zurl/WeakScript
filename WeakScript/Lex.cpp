@@ -37,6 +37,7 @@ type(0), reverse(_reverse), l(_l), r(_r){}
 Reg::MatchRule::MatchRule(bool _reverse, char _v) :
 type(1), reverse(_reverse), l(_v){}
 bool Reg::MatchRule::Match(const char &a){
+	if (a == '\"')return 0;
 	if (type) return reverse ^ (a == l);
 	else return reverse ^ (a >= l && a <= r);
 }
@@ -106,7 +107,7 @@ void Reg::setOpition(bool _greedy, bool _shift){
 }
 
 void Reg::addPreDef(){
-	this->checkList.emplace(-1, vector<MatchRule>{MatchRule(0, 'a', 'z'), MatchRule(0, 'A', 'Z'), MatchRule(0, '0', '9')});
+	this->checkList.emplace(-6, vector<MatchRule>{MatchRule(0, 'a', 'z'), MatchRule(0, 'A', 'Z'), MatchRule(0, '0', '9')});
 	//Small Letter
 	this->checkList.emplace(-2, vector<MatchRule>{MatchRule(0, 'a', 'z')});
 	//Big Letter
@@ -116,7 +117,7 @@ void Reg::addPreDef(){
 	//Number
 	this->checkList.emplace(-5, vector<MatchRule>{MatchRule(0, '0', '9')});
 	//All Char
-	this->checkList.emplace(-6, vector<MatchRule>{MatchRule(0, 1, 127)});
+	this->checkList.emplace(-1, vector<MatchRule>{MatchRule(0, 1, 127)});
 	//Space
 	this->checkList.emplace(-7, vector<MatchRule>{MatchRule(0, ' ')});
 	//n
@@ -149,10 +150,16 @@ bool Lex::loadToken(){
 	}
 	return 1;
 }
+string retstr(string a) {
+	string ret ="";
+	for (int i = 1; i <= a.length() - 2; i++)ret += a[i];
+	return ret;
+}
 void Lex::acceptToken(int id, string &name){
 	if (id == LEX_SPACE || id == LEX_TAB || id == LEX_NL)return;
-	if (id == LEX_ID || id==LEX_STRING ||id ==LEX_INT || id == LEX_REAL)
+	if (id == LEX_ID  ||id ==LEX_INT || id == LEX_REAL)
 		tokenList.emplace_back(id, name, line);
+	else if(id == LEX_STRING)tokenList.emplace_back(id, retstr(name), line);
 	else tokenList.emplace_back(id, "", line);
 }
 Token Lex::readNextToken(){

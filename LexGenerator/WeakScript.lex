@@ -75,7 +75,7 @@ BAND \&
 INT -?(NNN)+
 REAL -?(NNN)+.(NNN)+
 
-STRING "\a*"
+STRING \"\a*\"
 
 
 #useless symbol

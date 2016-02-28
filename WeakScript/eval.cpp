@@ -56,10 +56,11 @@ public:
 		return this->data;
 	}
 };
+#include<unordered_map>	
 class VariableTable {
 public:
 	VariableTable *prev;
-	map<std::string, Value> table;
+	unordered_map<std::string, Value> table;
 	VariableTable() {
 		prev = nullptr;
 	}
@@ -67,16 +68,12 @@ public:
 		prev = t;
 	}
 	void DefineVar( string name ) {
-		try {
-			this->getVar(name);
-		}
-		catch (UndefinedVariableException) {
-			this->table.emplace(name, Value());
-			return;
-		}
-		throw RedefinedVariableException(name);
+		auto t = table.find(name);
+		if (t != table.end()) 
+			throw RedefinedVariableException(name);
+		this->table.emplace(name, Value());	
 	}
-	Value & getVar( string name )  {
+	Value & getVar( const string & name )  {
 		auto t = table.find(name);
 		if (t == table.end()) {
 			if (prev == nullptr)
@@ -292,7 +289,7 @@ Value Value::operator/ (const Value &t) {
 }
 Value Value::operator% (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int / t.data.Int);
+		return Value(this->data.Int % t.data.Int);
 	throw CalTypeException(*this,t);
 }
 
@@ -480,7 +477,7 @@ Value ForNode::eval() {
 		auto t = midleft->eval();
 		if (!t.isTrue())return Value();
 		try {
-			midright->eval();
+			right->eval();
 		}
 		catch (BreakException) {
 			return Value();
@@ -488,7 +485,7 @@ Value ForNode::eval() {
 		catch (ContinueException) {
 			//Continue;
 		}
-		right->eval();
+		midright->eval();
 	}
 }
 Value IfElseNode::eval() {
@@ -620,7 +617,10 @@ Value FuncCallNode::eval() {
 		delete tmp;
 		return e.getValue();
 	}
-	//return //
+	//return 
+	auto tmp = NowVarTable;
+	NowVarTable = NowVarTable->prev;
+	delete tmp;
 	return Value();
 }
 Value ArguDefNode::eval() {
@@ -684,6 +684,7 @@ void addSysFunc(string name,vector<string> args,SysFunc func) {
 Value SysPrint() {
 	// Value print(x)
 	cout << NowVarTable->getVar("x");
+	throw ReturnException();
 	return Value();
 }
 Value SysReadInt() {
@@ -699,7 +700,7 @@ Value SysReadStr() {
 	return Value();
 }
 Value SysReadReal() {
-	long long x;
+	double x;
 	cin >> x;
 	throw ReturnException(Value((x)));
 	return Value();
