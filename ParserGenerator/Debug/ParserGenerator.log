@@ -1,0 +1,7 @@
+﻿  main.cpp
+d:\database\vscode\weakscript\parsergenerator\main.cpp(29): warning C4018: “<=”: 有符号/无符号不匹配
+d:\database\vscode\weakscript\parsergenerator\main.cpp(279): warning C4018: “<”: 有符号/无符号不匹配
+d:\database\vscode\weakscript\parsergenerator\main.cpp(281): warning C4018: “<”: 有符号/无符号不匹配
+d:\database\vscode\weakscript\parsergenerator\main.cpp(309): warning C4715: “dealrule”: 不是所有的控件路径都返回值
+  ParserGenerator.vcxproj -> D:\DataBase\VSCODE\WeakScript\Debug\ParserGenerator.exe
+  ParserGenerator.vcxproj -> D:\DataBase\VSCODE\WeakScript\Debug\ParserGenerator.pdb (Partial PDB)

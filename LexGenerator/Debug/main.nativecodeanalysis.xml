@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<DEFECTS><DEFECT><SFA><FILEPATH>d:\weakscript\lexgenerator\</FILEPATH><FILENAME>main.cpp</FILENAME><LINE>2</LINE><COLUMN>4</COLUMN></SFA><DEFECTCODE>6262</DEFECTCODE><DESCRIPTION>函数使用了堆栈的“80068”个字节: 超过了 /analyze:stacksize '16384'。 请考虑将某些数据移到堆中。</DESCRIPTION><FUNCTION>main</FUNCTION><DECORATED>main</DECORATED><FUNCLINE>2</FUNCLINE><PATH/></DEFECT></DEFECTS>

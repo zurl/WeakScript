@@ -33,7 +33,7 @@ public:
 class RedefinedVariableException : public MyExpection {
 public:
 	RedefinedVariableException(int name) {
-
+		
 	}
 };
 class BreakException : public MyExpection {
@@ -62,7 +62,7 @@ public:
 	VariableTable *prev;
 	map<int,Value*> table;
 	VariableTable() {
-		prev = nullptr;
+		prev = nullptr;  
 	}
 	VariableTable(VariableTable * t) {
 		prev = t;
@@ -73,7 +73,7 @@ public:
 			throw RedefinedVariableException(name);
 		this->table.emplace(name, new Value());	
 	}
-	Value & getVar( const int & name )  {
+	Value & getVarOld( const int & name )  {
 		auto t = table.find(name);
 		if (t == table.end()) {
 			if (prev == nullptr)
@@ -84,6 +84,20 @@ public:
 		else {
 			return *t->second;
 		}
+	}
+	inline Value & getVar(const int & name) {
+		auto ptr = this;
+		while (ptr != nullptr) {
+			auto t = ptr->table.find(name);
+			if (t != ptr->table.end())return *t->second;
+			ptr = ptr->prev;
+		}
+		//return *new Value();
+		throw UndefinedVariableException(name);
+	}
+	~VariableTable() {
+		for (auto &x : table)
+			delete x.second;
 	}
 };
 
@@ -99,12 +113,31 @@ public:
 class Object {
 public:
 	bool mark;
-	map<string, Value> data;
+	map<int, Value*> data;
+	Object() {
+
+	}
+	void DefineVar(int name) {
+		auto t = data.find(name);
+		if (t != data.end())
+			throw RedefinedVariableException(name);
+		this->data.emplace(name, new Value());
+	}
+	Value & getVar(int name) {
+		auto t = data.find(name);
+		if (t != data.end())return *t->second;
+		else throw UndefinedVariableException(name);
+	}
+	~Object() {
+		for (auto &x : data)
+			delete x.second;
+	}
 };
 
 vector<Function *> FuncTable;
 vector<Object *> ObjTable;
 VariableTable *NowVarTable = new VariableTable();
+Object * TempObject = nullptr;
 
 string itos(long long x) {
 	ostringstream os;
@@ -141,6 +174,7 @@ Value::Value(const double &t) {
 	this->type = Type::Real;
 	this->data.Real = t;
 }
+
 Value::Value(const Value &t) {
 	if (type == Type::Str)
 		delete data.Str;
@@ -223,6 +257,30 @@ bool Value::isTrue() {
 	if (this->type == Type::Int && this->data.Int == 0)
 		return false;
 	return true;
+}
+
+
+Value Value::operator++ () {
+	if (this->type == Type::Int) {
+		this->data.Int++;
+		return *this;
+	}
+	if (this->type == Type::Real) {
+		this->data.Real++;
+		return *this;
+	}
+	throw CalTypeException(*this);
+}
+Value Value::operator-- () {
+	if (this->type == Type::Int) {
+		this->data.Int--;
+		return *this;
+	}
+	if (this->type == Type::Real) {
+		this->data.Real--;
+		return *this;
+	}
+	throw CalTypeException(*this);
 }
 Value Value::operator- () {
 	if (this->type == Type::Int)
@@ -553,19 +611,16 @@ Value BorNode::eval() {
 	Value t2 = right->eval();
 	return t1 | t2;
 }
-Value DeclrNode::eval() {
-	NowVarTable->DefineVar(this->value);
-	return Value();
-}
 Value IDNode::eval() {
 	return NowVarTable->getVar(this->value);
 }
 extern ostream & operator<< (ostream & ,const Value & );
 
 Value AssignNode::eval() {
-	if (typeid(*this->left) != typeid(IDNode))
-		throw UnableAssignValueException();
-	Value & temp = NowVarTable->getVar(((IDNode *)((this->left).get()))->value);
+	auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
+	if (t == nullptr)
+		throw UnexpectRunTimeException();
+	Value & temp = t->get();
 	temp = right->eval();
 	return Value();
 }
@@ -577,10 +632,14 @@ vector<int> FuncCallTmp;
 int FuncCallTmpNow;
 Value FuncCallNode::eval() {
 	//var check
-	auto var = NowVarTable->getVar(((IDNode *)left.get())->value);
+	auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
+	if (t == nullptr)
+		throw UnableAssignValueException();
+	auto var = t->get();
 	//func check;
 	if (var.type != Value::Type::Func)
-		throw UnableCallVarException(((IDNode *)left.get())->value);
+		//throw UnableCallVarException(((IDNode *)left.get())->value);
+		throw UnexpectRunTimeException();
 	//read args list & create variable;
 	NowVarTable = new VariableTable(NowVarTable);
 	//Argus
@@ -595,7 +654,7 @@ Value FuncCallNode::eval() {
 		NowVarTable->DefineVar(((IDNode *)func->left.get())->value);
 		FuncCallTmp.emplace_back(((IDNode *)func->left.get())->value);
 		if (typeid(*this->right) != typeid(ArguNode)) {
-			NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow]) = this->right->eval();
+			NowVarTable->getVar(((IDNode *)func->left.get())->value) = this->right->eval();
 		}
 		else this->right->eval();
 	}
@@ -720,3 +779,67 @@ void initSysFunc() {
 	addSysFunc(5, {}, SysReadReal);
 	IdHashTableNow = 5;
 }	
+int getNameInt(string x) {
+	auto t = IdHashTable.find(x);
+	if (t == IdHashTable.end()) {
+		IdHashTable.emplace(x, ++IdHashTableNow);
+		return IdHashTableNow;
+	}
+	else return t->second;
+}
+Value & ILvalue::get() {
+	return * new Value ();
+}
+Value & SonNode::get() {
+	auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
+	if (t == nullptr)
+		throw UnexpectRunTimeException();
+	auto var = t->get();
+	return var.data.Obj->getVar(((IDNode*)(right.get()))->value);
+}
+Value & IDNode::get() {
+	return NowVarTable->getVar(this->value);
+}
+Value SonNode::eval() {
+	return this->get();
+	//return Value();
+}
+Value ObjDefNode::eval() {
+	TempObject = new Object();
+	this->son->eval();
+	ObjTable.emplace_back(TempObject);
+	return Value(TempObject);
+}
+Value JsonNode::eval() {
+	int x = ((IDNode*)(this->left.get()))->value;
+	TempObject->DefineVar(x);
+	TempObject->getVar(x) = this->right->eval();
+	return Value();
+}
+Value JsonGroupNode::eval() {
+	this->left->eval();
+	this->right->eval();
+	return Value();
+}
+Value SelfAddNode::eval() {
+	++dynamic_pointer_cast<ILvalue>(this->son)->get();
+	return Value();
+}
+Value SelfSubNode::eval() {
+	--dynamic_pointer_cast<ILvalue>(this->son)->get();
+	return Value();
+}
+Value VarDeclrNode::eval() {
+	NowVarTable->DefineVar(this->value);
+	return Value();
+}
+Value VarDeclrAssignNode::eval() {
+	NowVarTable->DefineVar(this->value);
+	NowVarTable->getVar(this->value) = this->son->eval();
+	return Value();
+}
+Value VarDeclrsNode::eval() {
+	this->left->eval();
+	this->right->eval();
+	return Value();
+}

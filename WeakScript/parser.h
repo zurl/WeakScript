@@ -20,6 +20,9 @@ public:
 	Value & operator= (const Value & t);
 
 	Value operator+ (const Value & t);
+	Value operator++ ();
+	Value operator-- ();
+
 	Value operator- (const Value & t);
 	Value operator* (const Value & t);
 	Value operator/ (const Value & t);
@@ -117,6 +120,27 @@ public:
 	virtual void visit(int x);
 	virtual Value eval();
 };
+
+class VarDeclrsNode : public BinaryNode {
+public:
+	VarDeclrsNode(shared_ptr<Node> a, shared_ptr<Node> b);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+class VarDeclrAssignNode : public UnaryNode {
+public:
+	int value;
+	VarDeclrAssignNode(string _value, shared_ptr<Node> a);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+class VarDeclrNode : public UnitNode {
+public:
+	int value;
+	VarDeclrNode(string _value);
+	virtual void visit(int x);
+	virtual Value eval();
+};
 class StmtsNode : public BinaryNode {
 public:
 	StmtsNode(shared_ptr<Node> a, shared_ptr<Node> b);
@@ -153,13 +177,7 @@ public:
 	virtual void visit(int x);
 	virtual Value eval();
 };
-class DeclrNode : public UnitNode {
-public:
-	int value;
-	DeclrNode(string _value);
-	virtual void visit(int x);
-	virtual Value eval();
-};
+
 class AssignNode : public BinaryNode {
 public:
 	AssignNode(shared_ptr<Node> a, shared_ptr<Node> b);
@@ -233,14 +251,58 @@ public:
 	virtual void visit(int x);
 	virtual Value eval();
 };
-class IDNode : public UnitNode {
+class ILvalue {
+public:
+	virtual Value & get();
+};
+class ObjDefNode : public UnaryNode {
+public:
+	ObjDefNode(shared_ptr<Node> a);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+class JsonGroupNode : public BinaryNode {
+public:
+	JsonGroupNode(shared_ptr<Node> a, shared_ptr<Node> b);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+class JsonNode : public BinaryNode {
+public:
+	JsonNode(shared_ptr<Node> a, shared_ptr<Node> b);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+class SelfSubNode : public UnaryNode {
+public:
+	SelfSubNode(shared_ptr<Node> a);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+class SelfAddNode : public UnaryNode {
+public:
+	SelfAddNode(shared_ptr<Node> a);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+class IDNode : public UnitNode , public ILvalue {
 public:
 	int value;
 	IDNode(string _value);
 		IDNode(int _value);
 	virtual void visit(int x);
 	virtual Value eval();
+	virtual Value & get();
 };
+class SonNode : public BinaryNode, public ILvalue {
+public:
+	SonNode(shared_ptr<Node> a, shared_ptr<Node> b);
+	virtual void visit(int x);
+	virtual Value eval();
+	virtual Value & get();
+};
+
+
 class OrNode : public BinaryNode {
 public:
 	OrNode(shared_ptr<Node> a, shared_ptr<Node> b);

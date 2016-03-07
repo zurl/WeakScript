@@ -152,10 +152,15 @@ public:
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
-class DeclrNode : public UnitNode {
+class SelfSubNode : public UnaryNode {
 public:
-    string value;
-    DeclrNode(string _value);
+    SelfSubNode(shared_ptr<Node> a);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class SelfAddNode : public UnaryNode {
+public:
+    SelfAddNode(shared_ptr<Node> a);
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
@@ -186,6 +191,42 @@ public:
 class BreakNode : public UnitNode {
 public:
     BreakNode();
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class VarDeclrsNode : public BinaryNode {
+public:
+    VarDeclrsNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class VarDeclrAssignNode : public BinaryNode {
+public:
+    VarDeclrAssignNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class VarDeclrNode : public UnaryNode {
+public:
+    VarDeclrNode(shared_ptr<Node> a);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class ObjDefNodeNode : public UnaryNode {
+public:
+    ObjDefNodeNode(shared_ptr<Node> a);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class JsonGroupNode : public BinaryNode {
+public:
+    JsonGroupNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class JsonNode : public BinaryNode {
+public:
+    JsonNode(shared_ptr<Node> a,shared_ptr<Node> b);
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
@@ -228,6 +269,12 @@ public:
 class ArguNode : public BinaryNode {
 public:
     ArguNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
+class SonNode : public BinaryNode {
+public:
+    SonNode(shared_ptr<Node> a,shared_ptr<Node> b);
     virtual void visit(int x) ;
     virtual Value eval() ;
 };

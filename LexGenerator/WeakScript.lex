@@ -32,10 +32,12 @@ ELSE else
 FOR for
 VAR var
 RETURN return
-FUNC func
+FUNC function
 WHILE while
 BREAK break
 CONTINUE continue
+IN in
+NEW new
 
 #control symbol 
 
@@ -51,6 +53,8 @@ POT .
 COL :
 #operatror
 
+SADD \+\+
+SSUB \-\-
 ADD \+
 SUB \-
 MUL \*
@@ -75,8 +79,7 @@ BAND \&
 INT -?(NNN)+
 REAL -?(NNN)+.(NNN)+
 
-STRING \"\a*\"
-
+STRING (\"\a*\")|(\'\a*\')
 
 #useless symbol
 

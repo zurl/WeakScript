@@ -17,17 +17,55 @@ $Stmt
 | $StmtBase	%SEMI						@ # @
 :RULEEND
 
+
 :RULE
 $StmtBase
 | $Expr									@ # @
 | %BREAK								@ Break 0 @
 | %CONTINUE								@ Continue 0 @
 | %RETURN $Expr							@ Return 1 root	 @
-| %RETURN								@ ReturnNull 1 root	 @				
-| $Value %ASSIGN $Expr					@ Assign 2 SavedRoot3 root @
-| $Value %ASSIGN $FuncDef				@ Assign 2 SavedRoot3 root @
-| %VAR %ID								@ * Declr string ReadinToken2.name @
+| %RETURN								@ ReturnNull 1 root	 @		
+| $LValue %ASSIGN $Rvalue				@ Assign 2 SavedRoot3 root @
+| $LValue %SADD							@ SelfAdd 1 root @
+| $LValue %SSUB							@ SelfSub 1 root @
+| %SADD $LValue							@ SelfAdd 1 root @
+| %SSUB	$LValue 						@ SelfSub 1 root @
+| %VAR $VarDecl							@ # @
 :EMPTY
+:RULEEND
+
+:RULE
+$Rvalue	
+| $Expr					@ # @
+| $FuncDef				@ # @
+| $ObjDef				@ # @
+:RULEEND
+
+:RULE
+$VarDecl
+| $VarDeclBase * %COM $VarDeclBase		@ VarDeclrs 2 SavedRoot3 root @		
+:RULEEND
+
+:RULE
+$VarDeclBase
+| %ID %ASSIGN $Rvalue					@ VarDeclrAssign 2 SavedRoot3 root @
+| %ID									@ VarDeclr 1 root @
+:RULEEND
+
+:RULE
+$ObjDef	
+| %LCB %RCB								@ ObjDefNode 1 NullNode() @
+| %LCB $JSONGroup %RCB					@ ObjDefNode 1 root @
+:RULEEND
+
+:RULE
+$JSONGroup
+| $JSON * %COM $JSON					@ JsonGroup 2 SavedRoot4 root @
+:RULEEND
+
+:RULE
+$JSON
+| $IDBase %COL $Value					@ Json 2 SavedRoot2 root @
 :RULEEND
 
 :RULE
@@ -69,6 +107,11 @@ $Argu
 
 :RULE
 $LValue 
+| $IDBase * %POT $IDBase					@ Son 2 SavedRoot4 root  @
+:RULEEND
+
+:RULE
+$IDBase
 | %ID									@ * ID string ReadinToken1.name @
 :RULEEND
 
