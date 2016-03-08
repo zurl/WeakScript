@@ -1,10 +1,11 @@
 {  
 	var parent = {
-		a : "nb"
+		a : "nb",
+		b : "cc",
+		eee: "fuck"
 	};
-	var son = {
-		b : "sb"
-	};
-	son.__proto__ = parent;
-	print(son.a);
+	for ( var x  in parent){
+		print(x + ",");
+	}
+	
 }  

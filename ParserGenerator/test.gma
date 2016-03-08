@@ -14,16 +14,18 @@ $Stmt
 | %WHILE %LP $Expr %RP $Stmt			@ While 2 SavedRoot4 root @
 | %FOR %LP $StmtBase %SEMI $Expr %SEMI
 	 $StmtBase %RP $Stmt				@ For 4 SavedRoot4 SavedRoot6 SavedRoot8 root @
+| %FOR %LP %VAR $IDBase %IN $LValue 
+	%RP $Stmt							@ Foreach 3 SavedRoot5 SavedRoot7 root @
 | $StmtBase	%SEMI						@ # @
 :RULEEND
 
 
 :RULE
 $StmtBase
-| $Expr									@ # @
+| $Rvalue								@ # @
 | %BREAK								@ Break 0 @
 | %CONTINUE								@ Continue 0 @
-| %RETURN $Expr							@ Return 1 root	 @
+| %RETURN $Rvalue						@ Return 1 root	 @
 | %RETURN								@ ReturnNull 1 root	 @		
 | $LValue %ASSIGN $Rvalue				@ Assign 2 SavedRoot3 root @
 | $LValue %SADD							@ SelfAdd 1 root @
@@ -69,7 +71,7 @@ $JSONGroup
 
 :RULE
 $JSON
-| $IDBase %COL $Value					@ Json 2 SavedRoot2 root @
+| $IDBase %COL $Rvalue					@ Json 2 SavedRoot2 root @
 :RULEEND
 
 :RULE
@@ -80,7 +82,7 @@ $ArrayDef
 
 :RULE
 $ArrayDefGroup
-| $Expr * %COM $Expr					@ ArrayDefGroup 2 SavedRoot4 root @
+| $Rvalue * %COM $Rvalue					@ ArrayDefGroup 2 SavedRoot4 root @
 :RULEEND
 
 
@@ -103,7 +105,7 @@ $ValueGroup
 | %SUB $Value							@ Neg 1 root @
 | %NOT $Value							@ Not 1 root @
 | %REV $Value							@ Rev 1 root @
-| %LP $Expr %RP							@ # @
+| %LP $Rvalue %RP							@ # @
 :RULEEND
 
 :RULE
@@ -117,7 +119,7 @@ $Value
 
 :RULE
 $Argu
-| $Expr * %COM $Expr					@ Argu 2 SavedRoot4 root @
+| $Rvalue * %COM $Rvalue					@ Argu 2 SavedRoot4 root @
 :EMPTY
 :RULEEND	
 
@@ -129,7 +131,7 @@ $LValue
 :RULE
 $SonExpr
 | %POT $IDBase							@ # @
-| %LSB $Expr %RSB						@ # @
+| %LSB $Rvalue %RSB						@ # @
 :RULEEND
 
 :RULE

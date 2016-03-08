@@ -77,7 +77,13 @@ ostream& operator << (ostream &o, const Value& a) {
 	return o;
 }
 
-
+ForeachNode::ForeachNode(shared_ptr<Node> a, shared_ptr<Node> b, shared_ptr<Node> c)
+	:TernaryNode(a, b, c) {}
+void ForeachNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "Foreach Node" << endl;
+	this->visitson(x + 1);
+}
 VarDeclrsNode::VarDeclrsNode(shared_ptr<Node> a, shared_ptr<Node> b)
 	:BinaryNode(a, b) {}
 void VarDeclrsNode::visit(int x) {
@@ -536,6 +542,50 @@ bool parseStmt() {
 		if (ReadinToken2.id == LEX_LP) {
 			auto SavedLexPos3 = lex.getNowPos();
 			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_VAR) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				if (parseIDBase()) {
+					auto SavedLexPos5 = lex.getNowPos();
+					auto SavedRoot5 = root;
+					auto ReadinToken5 = lex.readNextToken();
+					if (ReadinToken5.id == LEX_IN) {
+						auto SavedLexPos6 = lex.getNowPos();
+						auto SavedRoot6 = root;
+						if (parseLValue()) {
+							auto SavedLexPos7 = lex.getNowPos();
+							auto SavedRoot7 = root;
+							auto ReadinToken7 = lex.readNextToken();
+							if (ReadinToken7.id == LEX_RP) {
+								auto SavedLexPos8 = lex.getNowPos();
+								auto SavedRoot8 = root;
+								if (parseStmt()) {
+									root = shared_ptr<Node>(new ForeachNode(SavedRoot5, SavedRoot7, root));
+									return 1;
+								}
+								refresh();
+								lex.setNowPos(SavedLexPos8);
+								root = SavedRoot8;
+							}
+							lex.setNowPos(SavedLexPos7);
+							root = SavedRoot7;
+						}
+						refresh();
+						lex.setNowPos(SavedLexPos6);
+						root = SavedRoot6;
+					}
+					lex.setNowPos(SavedLexPos5);
+					root = SavedRoot5;
+				}
+				refresh();
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+			SavedLexPos3 = lex.getNowPos();
+			SavedRoot3 = root;
 			if (parseStmtBase()) {
 				auto SavedLexPos4 = lex.getNowPos();
 				auto SavedRoot4 = root;
@@ -894,7 +944,7 @@ bool parseStmtBase() {
 	if (ReadinToken1.id == LEX_RETURN) {
 		auto SavedLexPos2 = lex.getNowPos();
 		auto SavedRoot2 = root;
-		if (parseExpr()) {
+		if (parseRvalue()) {
 			root = shared_ptr<Node>(new ReturnNode(root));
 			return 1;
 		}
@@ -926,7 +976,7 @@ bool parseStmtBase() {
 	root = SavedRoot1;
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
-	if (parseExpr()) {
+	if (parseRvalue()) {
 		return 1;
 	}
 	refresh();
@@ -1006,7 +1056,7 @@ bool parseRvalue() {
 bool parseArrayDefGroup() {
 	auto SavedLexPos1 = lex.getNowPos();
 	auto SavedRoot1 = root;
-	if (parseExpr()) {
+	if (parseRvalue()) {
 		int flag = 1;
 		while (flag) {
 			flag = 0;
@@ -1016,7 +1066,7 @@ bool parseArrayDefGroup() {
 			if (ReadinToken3.id == LEX_COM) {
 				auto SavedLexPos4 = lex.getNowPos();
 				auto SavedRoot4 = root;
-				if (parseExpr()) {
+				if (parseRvalue()) {
 					root = shared_ptr<Node>(new ArrayDefGroupNode(SavedRoot4, root));
 					flag = 1;
 					continue;
@@ -1190,7 +1240,7 @@ bool parseValueGroup() {
 	if (ReadinToken1.id == LEX_LP) {
 		auto SavedLexPos2 = lex.getNowPos();
 		auto SavedRoot2 = root;
-		if (parseExpr()) {
+		if (parseRvalue()) {
 			auto SavedLexPos3 = lex.getNowPos();
 			auto SavedRoot3 = root;
 			auto ReadinToken3 = lex.readNextToken();
@@ -1328,7 +1378,7 @@ bool parseValue() {
 bool parseArgu() {
 	auto SavedLexPos1 = lex.getNowPos();
 	auto SavedRoot1 = root;
-	if (parseExpr()) {
+	if (parseRvalue()) {
 		int flag = 1;
 		while (flag) {
 			flag = 0;
@@ -1338,7 +1388,7 @@ bool parseArgu() {
 			if (ReadinToken3.id == LEX_COM) {
 				auto SavedLexPos4 = lex.getNowPos();
 				auto SavedRoot4 = root;
-				if (parseExpr()) {
+				if (parseRvalue()) {
 					root = shared_ptr<Node>(new ArguNode(SavedRoot4, root));
 					flag = 1;
 					continue;

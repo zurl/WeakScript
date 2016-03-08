@@ -260,6 +260,11 @@ public:
 	ObjDefNode(shared_ptr<Node> a);
 	virtual void visit(int x);
 	virtual Value eval();
+}; class ForeachNode : public TernaryNode {
+public:
+	ForeachNode(shared_ptr<Node> a, shared_ptr<Node> b, shared_ptr<Node> c);
+	virtual void visit(int x);
+	virtual Value eval();
 };
 class JsonGroupNode : public BinaryNode {
 public:

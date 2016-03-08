@@ -25,6 +25,11 @@ public:
 class UnexpectRunTimeException : public MyExpection{
 
 };
+class UnableTraveralException : public MyExpection {
+
+};
+
+
 class UnableAssignValueException : public MyExpection {
 
 }; class UnexpectSubscriptException : public MyExpection {
@@ -555,6 +560,34 @@ Value WhileNode::eval() {
 		}
 	}
 }
+Value ForeachNode::eval() {
+	//to modify
+	auto varname = dynamic_pointer_cast<IDNode>(this->left)->value;
+	NowVarTable->defineVar(varname);
+	auto datavar = dynamic_pointer_cast<ILvalue>(this->mid)->get();
+	if (datavar.type == Value::Type::Obj) {
+		for (auto & x : datavar.data.Obj->data) {
+			NowVarTable->getVar(varname) = *x.second;
+			try {
+				right->eval();
+			}
+			catch (BreakException) {
+				return Value();
+			}
+			catch (ContinueException) {
+				//Continue;
+			}
+		}
+		return Value();
+	}
+	else if (datavar.type == Value::Type::Str) {
+		//todo;
+	}
+	else {
+		throw UnableTraveralException();
+	}
+	return Value();
+}
 Value ForNode::eval() {
 	left->eval();
 	while (1) {
@@ -822,10 +855,15 @@ Value & SonNode::get() {
 	if (r == nullptr) {
 		//subscript
 		auto ret = this->right->eval();
-		if(ret.type != Value::Type::Int)
+		if (ret.type == Value::Type::Int) {
+			return var.data.Obj->getVar(-ret.data.Int);			
+		}
+		else if (ret.type == Value::Type::Str) {
+			return var.data.Obj->getVar(getNameInt(*ret.data.Str));
+		}
+		else {
 			throw UnexpectSubscriptException();
-		else 
-			return var.data.Obj->getVar(-ret.data.Int);
+		}
 	}
 	else {
 		//object
@@ -840,6 +878,7 @@ Value SonNode::eval() {
 	return this->get();
 	//return Value();
 }
+
 Value ObjDefNode::eval() {
 	TempObject = new Object();
 	this->son->eval();
