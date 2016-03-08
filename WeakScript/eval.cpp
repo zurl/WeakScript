@@ -136,6 +136,8 @@ public:
 vector<Function *> FuncTable;
 vector<Object *> ObjTable;
 VariableTable *NowVarTable = new VariableTable();
+VariableTable *GlobalVarTable = NowVarTable; 
+VariableTable *TmpVarTable = nullptr;
 Object * TempObject = nullptr;
 
 string itos(long long x) {
@@ -640,7 +642,11 @@ Value FuncCallNode::eval() {
 		//throw UnableCallVarException(((IDNode *)left.get())->value);
 		throw UnexpectRunTimeException();
 	//read args list & create variable;
-	NowVarTable = new VariableTable(NowVarTable);
+
+	
+	TmpVarTable = new VariableTable(GlobalVarTable);
+
+
 	//Argus
 	//null
 	FuncCallTmp = vector<int>(); FuncCallTmpNow = 0;
@@ -650,10 +656,10 @@ Value FuncCallNode::eval() {
 	}
 	//sigle
 	else if (typeid(*func->left) == typeid(IDNode)) {
-		NowVarTable->defineVar(((IDNode *)func->left.get())->value);
+		TmpVarTable->defineVar(((IDNode *)func->left.get())->value);
 		FuncCallTmp.emplace_back(((IDNode *)func->left.get())->value);
 		if (typeid(*this->right) != typeid(ArguNode)) {
-			NowVarTable->getVar(((IDNode *)func->left.get())->value) = this->right->eval();
+			TmpVarTable->getVar(((IDNode *)func->left.get())->value) = this->right->eval();
 		}
 		else this->right->eval();
 	}
@@ -661,31 +667,36 @@ Value FuncCallNode::eval() {
 	else {
 		func->left->eval();
 		if (typeid(*this->right) != typeid(ArguNode)) {
-			NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow]) = this->right->eval();
+			TmpVarTable->getVar(FuncCallTmp[FuncCallTmpNow]) = this->right->eval();
 		}
 		else this->right->eval();
 	}
 	//render;
+
+	//switch var table
+	auto SavedVarTable = NowVarTable;
+	NowVarTable = TmpVarTable;
+
 	try {
 		var.data.Func->data->right->eval();
 	}
 	catch (ReturnException e) {
 		auto tmp = NowVarTable;
-		NowVarTable = NowVarTable->prev;
+		NowVarTable = SavedVarTable;
 		delete tmp;
 		return e.getValue();
 	}
 	//return 
 	auto tmp = NowVarTable;
-	NowVarTable = NowVarTable->prev;
+	NowVarTable = SavedVarTable;
 	delete tmp;
 	return Value();
 }
 Value ArguDefNode::eval() {
-	NowVarTable->defineVar(((IDNode *)left.get())->value);
+	TmpVarTable->defineVar(((IDNode *)left.get())->value);
 	FuncCallTmp.emplace_back(((IDNode *)left.get())->value);
 	if (typeid(*right) == typeid(IDNode)) {
-		NowVarTable->defineVar(((IDNode *)right.get())->value);
+		TmpVarTable->defineVar(((IDNode *)right.get())->value);
 		FuncCallTmp.emplace_back(((IDNode *)right.get())->value);
 	}
 	else right->eval();
@@ -694,18 +705,18 @@ Value ArguDefNode::eval() {
 Value ArguNode::eval() {
 	if (typeid(*this->left) != typeid(ArguNode)) {
 		FuncCallTmpNow++;
-		NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow-1]) = this->left->eval();
+		TmpVarTable->getVar(FuncCallTmp[FuncCallTmpNow-1]) = this->left->eval();
 		if (FuncCallTmpNow  == FuncCallTmp.size())
 			return Value();
 		FuncCallTmpNow++;
-		NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow - 1]) = this->right->eval();
+		TmpVarTable->getVar(FuncCallTmp[FuncCallTmpNow - 1]) = this->right->eval();
 	}
 	else {
 		this->left->eval();
 		if (FuncCallTmpNow  == FuncCallTmp.size())
 			return Value();
 		FuncCallTmpNow++;
-		NowVarTable->getVar(FuncCallTmp[FuncCallTmpNow - 1]) = this->right->eval();
+		TmpVarTable->getVar(FuncCallTmp[FuncCallTmpNow - 1]) = this->right->eval();
 	}
 	return Value();
 }
