@@ -16,7 +16,7 @@
 #WeakScript Lex 
 #Version 1.2 Stable
 
-@DEF SLT a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z
+@DEF SLT a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|_
 @DEF NNN 1|2|3|4|5|6|7|8|9|0
 
 @RULE
@@ -32,10 +32,12 @@ ELSE else
 FOR for
 VAR var
 RETURN return
-FUNC func
+FUNC function
 WHILE while
 BREAK break
 CONTINUE continue
+IN in
+NEW new
 
 #control symbol 
 
@@ -51,6 +53,8 @@ POT .
 COL :
 #operatror
 
+SADD \+\+
+SSUB \-\-
 ADD \+
 SUB \-
 MUL \*
@@ -75,8 +79,7 @@ BAND \&
 INT -?(NNN)+
 REAL -?(NNN)+.(NNN)+
 
-STRING "\a*"
-
+STRING (\"\a*\")|(\'\a*\')
 
 #useless symbol
 

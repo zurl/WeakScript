@@ -1,8 +1,8 @@
 #include "parser.h"
 Lex lex("test.ws");
 shared_ptr<Node> root = shared_ptr<Node>(new NullNode());
-map<string, int> IdHashTable;
-int IdHashTableNow = 0;
+extern map<string, int> IdHashTable;
+extern int IdHashTableNow;
 UnitNode::UnitNode() {}
 void UnitNode::visitson(int x) {}
 void UnitNode::del() {}

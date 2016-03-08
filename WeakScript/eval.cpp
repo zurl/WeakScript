@@ -1,5 +1,15 @@
 #include "parser.h"
+map<string, int> IdHashTable;
+int IdHashTableNow;
 
+int getNameInt(string x) {
+	auto t = IdHashTable.find(x);
+	if (t == IdHashTable.end()) {
+		IdHashTable.emplace(x, ++IdHashTableNow);
+		return IdHashTableNow;
+	}
+	else return t->second;
+}
 class MyExpection   {
 	//Abs Class
 };
@@ -112,6 +122,9 @@ public:
 		data = shared_ptr<FuncDefNode>(&t);
 	}
 };
+
+
+const int __proto__ = getNameInt("__proto__");
 class Object {
 public:
 	bool mark;
@@ -119,12 +132,24 @@ public:
 	Object() {
 
 	}
-	Value & getVar(int name) {
+	Value & __getVar(int name) {
 		auto t = data.find(name);
 		if (t != data.end())return *t->second;
 		else {
-			this->data.emplace(name, new Value());
-			return this->getVar(name);
+			auto pro = data.find(__proto__);
+			if (pro == data.end() || pro->second->type != Value::Type::Obj)
+				throw UndefinedVariableException(1);
+			else
+				return pro->second->data.Obj->__getVar(name);
+		}
+	}
+	inline Value & getVar(int name) {
+		try {
+			return this->__getVar(name);
+		}
+		catch (UndefinedVariableException) {
+			data.emplace(name, new Value());
+			return this->__getVar(name);
 		}
 	}
 	~Object() {
@@ -731,17 +756,7 @@ void SysFuncNode::visit(int x) {
 Value SysFuncNode::eval() {
 	return func();
 }
-extern map<string,int> IdHashTable;
-extern int IdHashTableNow;
 
-int getNameInt(string x) {
-	auto t = IdHashTable.find(x);
-	if (t == IdHashTable.end()) {
-		IdHashTable.emplace(x, ++IdHashTableNow);
-		return IdHashTableNow;
-	}
-	else return t->second;
-}
 void addSysFunc(string nameO,vector<string> argsO,SysFunc func) {
 	//define var
 	int name = getNameInt(nameO);
@@ -767,10 +782,11 @@ void addSysFunc(string nameO,vector<string> argsO,SysFunc func) {
 	NowVarTable->getVar(name).type = Value::Type::Func;
 	NowVarTable->getVar(name).data.Func = new Function(*new FuncDefNode(arugs, shared_ptr<Node>(new SysFuncNode(func))));
 }
+const int __x = getNameInt("x");
 void initSysFunc() {
 	addSysFunc("print", {"x"}, []() {
 		// Value print(x)
-		cout << NowVarTable->getVar(2);
+		cout << NowVarTable->getVar(__x);
 		throw ReturnException();
 		return Value();
 	});
