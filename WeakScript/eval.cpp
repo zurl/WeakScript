@@ -722,9 +722,22 @@ Value SysFuncNode::eval() {
 }
 extern map<string,int> IdHashTable;
 extern int IdHashTableNow;
-void addSysFunc(int name,vector<int> args,SysFunc func) {
-	//define var
 
+int getNameInt(string x) {
+	auto t = IdHashTable.find(x);
+	if (t == IdHashTable.end()) {
+		IdHashTable.emplace(x, ++IdHashTableNow);
+		return IdHashTableNow;
+	}
+	else return t->second;
+}
+void addSysFunc(string nameO,vector<string> argsO,SysFunc func) {
+	//define var
+	int name = getNameInt(nameO);
+	vector<int> args;
+	for (auto &t : argsO) {
+		args.emplace_back(getNameInt(t));
+	}
 	NowVarTable->defineVar(name);
 	shared_ptr<Node> arugs;
 	//null;
@@ -743,49 +756,33 @@ void addSysFunc(int name,vector<int> args,SysFunc func) {
 	NowVarTable->getVar(name).type = Value::Type::Func;
 	NowVarTable->getVar(name).data.Func = new Function(*new FuncDefNode(arugs, shared_ptr<Node>(new SysFuncNode(func))));
 }
-Value SysPrint() {
-	// Value print(x)
-	cout << NowVarTable->getVar(2);
-	throw ReturnException();
-	return Value();
-}
-Value SysReadInt() {
-	long long x;
-	cin >> x;
-	throw ReturnException(Value((x)));
-	return Value();
-}
-Value SysReadStr() {
-	string x;
-	cin >> x;
-	throw ReturnException(Value((x)));
-	return Value();
-}
-Value SysReadReal() {
-	double x;
-	cin >> x;
-	throw ReturnException(Value((x)));
-	return Value();
-}
 void initSysFunc() {
-	IdHashTable.emplace("print",1); IdHashTable.emplace("x",2);
-	addSysFunc(1, {2}, SysPrint);
-	IdHashTable.emplace("readint",3);
-	addSysFunc(3, {}, SysReadInt);
-	IdHashTable.emplace("readstr",4);
-	addSysFunc(4, {}, SysReadStr);
-	IdHashTable.emplace("readreal",5);
-	addSysFunc(5, {}, SysReadReal);
-	IdHashTableNow = 5;
+	addSysFunc("print", {"x"}, []() {
+		// Value print(x)
+		cout << NowVarTable->getVar(2);
+		throw ReturnException();
+		return Value();
+	});
+	addSysFunc("readint", {}, []() {
+		long long x;
+		cin >> x;
+		throw ReturnException(Value((x)));
+		return Value();
+	});
+	addSysFunc("readstr", {}, []() {
+		string x;
+		cin >> x;
+		throw ReturnException(Value((x)));
+		return Value();
+	});
+	addSysFunc("readreal", {}, []() {
+		double x;
+		cin >> x;
+		throw ReturnException(Value((x)));
+		return Value();
+	});
 }	
-int getNameInt(string x) {
-	auto t = IdHashTable.find(x);
-	if (t == IdHashTable.end()) {
-		IdHashTable.emplace(x, ++IdHashTableNow);
-		return IdHashTableNow;
-	}
-	else return t->second;
-}
+
 Value & ILvalue::get() {
 	return * new Value ();
 }
