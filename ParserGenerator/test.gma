@@ -36,9 +36,10 @@ $StmtBase
 
 :RULE
 $Rvalue	
-| $Expr					@ # @
-| $FuncDef				@ # @
-| $ObjDef				@ # @
+| $Expr									@ # @
+| $FuncDef								@ # @
+| $ObjDef								@ # @
+| $ArrayDef								@ # @
 :RULEEND
 
 :RULE
@@ -54,8 +55,8 @@ $VarDeclBase
 
 :RULE
 $ObjDef	
-| %LCB %RCB								@ ObjDefNode 1 NullNode() @
-| %LCB $JSONGroup %RCB					@ ObjDefNode 1 root @
+| %LCB %RCB								@ ObjDef 1 NullNode() @
+| %LCB $JSONGroup %RCB					@ ObjDef 1 root @
 :RULEEND
 
 :RULE
@@ -63,10 +64,25 @@ $JSONGroup
 | $JSON * %COM $JSON					@ JsonGroup 2 SavedRoot4 root @
 :RULEEND
 
+
+
+
 :RULE
 $JSON
 | $IDBase %COL $Value					@ Json 2 SavedRoot2 root @
 :RULEEND
+
+:RULE
+$ArrayDef
+| %LSB $ArrayDefGroup %RSB				@ ArrayDef 1 NullNode() @
+| %LSB %RSB								@ ArrayDef 1 root @
+:RULEEND
+
+:RULE
+$ArrayDefGroup
+| $Expr * %COM $Expr					@ ArrayDefGroup 2 SavedRoot4 root @
+:RULEEND
+
 
 :RULE
 $FuncDef
@@ -107,7 +123,13 @@ $Argu
 
 :RULE
 $LValue 
-| $IDBase * %POT $IDBase					@ Son 2 SavedRoot4 root  @
+| $IDBase * $SonExpr					@ Son 2 SavedRoot3 root  @
+:RULEEND
+
+:RULE
+$SonExpr
+| %POT $IDBase							@ # @
+| %LSB $Expr %RSB						@ # @
 :RULEEND
 
 :RULE
@@ -117,6 +139,8 @@ $IDBase
 
 
 	
+
+
 //Calulate rules
 
 :RULE

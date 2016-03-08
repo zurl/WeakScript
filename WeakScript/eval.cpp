@@ -17,7 +17,9 @@ class UnexpectRunTimeException : public MyExpection{
 };
 class UnableAssignValueException : public MyExpection {
 
-};
+}; class UnexpectSubscriptException : public MyExpection {
+
+}; 
 class UndefinedVariableException : public MyExpection {
 public:
 	UndefinedVariableException(int name) {
@@ -60,14 +62,14 @@ public:
 class VariableTable {
 public:
 	VariableTable *prev;
-	map<int,Value*> table;
+	unordered_map<int,Value*> table;
 	VariableTable() {
 		prev = nullptr;  
 	}
 	VariableTable(VariableTable * t) {
 		prev = t;
 	}
-	void DefineVar( int name ) {
+	void defineVar( int name ) {
 		auto t = table.find(name);
 		if (t != table.end()) 
 			throw RedefinedVariableException(name);
@@ -113,20 +115,17 @@ public:
 class Object {
 public:
 	bool mark;
-	map<int, Value*> data;
+	unordered_map<int, Value*> data;
 	Object() {
 
-	}
-	void DefineVar(int name) {
-		auto t = data.find(name);
-		if (t != data.end())
-			throw RedefinedVariableException(name);
-		this->data.emplace(name, new Value());
 	}
 	Value & getVar(int name) {
 		auto t = data.find(name);
 		if (t != data.end())return *t->second;
-		else throw UndefinedVariableException(name);
+		else {
+			this->data.emplace(name, new Value());
+			return this->getVar(name);
+		}
 	}
 	~Object() {
 		for (auto &x : data)
@@ -263,11 +262,11 @@ bool Value::isTrue() {
 Value Value::operator++ () {
 	if (this->type == Type::Int) {
 		this->data.Int++;
-		return *this;
+		return Value();
 	}
 	if (this->type == Type::Real) {
 		this->data.Real++;
-		return *this;
+		return Value();
 	}
 	throw CalTypeException(*this);
 }
@@ -651,7 +650,7 @@ Value FuncCallNode::eval() {
 	}
 	//sigle
 	else if (typeid(*func->left) == typeid(IDNode)) {
-		NowVarTable->DefineVar(((IDNode *)func->left.get())->value);
+		NowVarTable->defineVar(((IDNode *)func->left.get())->value);
 		FuncCallTmp.emplace_back(((IDNode *)func->left.get())->value);
 		if (typeid(*this->right) != typeid(ArguNode)) {
 			NowVarTable->getVar(((IDNode *)func->left.get())->value) = this->right->eval();
@@ -683,10 +682,10 @@ Value FuncCallNode::eval() {
 	return Value();
 }
 Value ArguDefNode::eval() {
-	NowVarTable->DefineVar(((IDNode *)left.get())->value);
+	NowVarTable->defineVar(((IDNode *)left.get())->value);
 	FuncCallTmp.emplace_back(((IDNode *)left.get())->value);
 	if (typeid(*right) == typeid(IDNode)) {
-		NowVarTable->DefineVar(((IDNode *)right.get())->value);
+		NowVarTable->defineVar(((IDNode *)right.get())->value);
 		FuncCallTmp.emplace_back(((IDNode *)right.get())->value);
 	}
 	else right->eval();
@@ -726,7 +725,7 @@ extern int IdHashTableNow;
 void addSysFunc(int name,vector<int> args,SysFunc func) {
 	//define var
 
-	NowVarTable->DefineVar(name);
+	NowVarTable->defineVar(name);
 	shared_ptr<Node> arugs;
 	//null;
 	if (args.size() == 0)arugs = shared_ptr<Node>(new NullNode());
@@ -795,7 +794,20 @@ Value & SonNode::get() {
 	if (t == nullptr)
 		throw UnexpectRunTimeException();
 	auto var = t->get();
-	return var.data.Obj->getVar(((IDNode*)(right.get()))->value);
+	auto r = std::dynamic_pointer_cast<IDNode>(this->right);
+	if (r == nullptr) {
+		//subscript
+		auto ret = this->right->eval();
+		if(ret.type != Value::Type::Int)
+			throw UnexpectSubscriptException();
+		else 
+			return var.data.Obj->getVar(-ret.data.Int);
+	}
+	else {
+		//object
+		return var.data.Obj->getVar(r->value);
+	}
+
 }
 Value & IDNode::get() {
 	return NowVarTable->getVar(this->value);
@@ -810,9 +822,30 @@ Value ObjDefNode::eval() {
 	ObjTable.emplace_back(TempObject);
 	return Value(TempObject);
 }
+int TempArrayIndex;
+Value ArrayDefNode::eval() {
+	TempObject = new Object();
+	TempArrayIndex = -1;
+	this->son->eval();
+	ObjTable.emplace_back(TempObject);
+	return Value(TempObject);
+}
+
+Value ArrayDefGroupNode::eval() {
+	if (dynamic_pointer_cast<ArrayDefGroupNode>(this->left) == nullptr) {
+		++TempArrayIndex;
+		TempObject->getVar(-TempArrayIndex) = this->left->eval();
+	}
+	else {
+		this->left->eval();
+	}
+	++TempArrayIndex;
+	TempObject->getVar(-TempArrayIndex) = this->right->eval();
+	return Value();
+}
+
 Value JsonNode::eval() {
 	int x = ((IDNode*)(this->left.get()))->value;
-	TempObject->DefineVar(x);
 	TempObject->getVar(x) = this->right->eval();
 	return Value();
 }
@@ -830,11 +863,11 @@ Value SelfSubNode::eval() {
 	return Value();
 }
 Value VarDeclrNode::eval() {
-	NowVarTable->DefineVar(this->value);
+	NowVarTable->defineVar(this->value);
 	return Value();
 }
 Value VarDeclrAssignNode::eval() {
-	NowVarTable->DefineVar(this->value);
+	NowVarTable->defineVar(this->value);
 	NowVarTable->getVar(this->value) = this->son->eval();
 	return Value();
 }

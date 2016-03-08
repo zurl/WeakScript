@@ -267,6 +267,18 @@ public:
 	virtual void visit(int x);
 	virtual Value eval();
 };
+class ArrayDefNode : public UnaryNode {
+public:
+	ArrayDefNode(shared_ptr<Node> a);
+	virtual void visit(int x);
+	virtual Value eval();
+};
+class ArrayDefGroupNode : public BinaryNode {
+public:
+	ArrayDefGroupNode(shared_ptr<Node> a, shared_ptr<Node> b);
+	virtual void visit(int x);
+	virtual Value eval();
+};
 class JsonNode : public BinaryNode {
 public:
 	JsonNode(shared_ptr<Node> a, shared_ptr<Node> b);

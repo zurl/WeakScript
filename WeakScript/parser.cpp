@@ -157,6 +157,20 @@ long long _stoi(string x) {
 	long long ret;
 	is >> ret;
 	return ret;
+} 
+ArrayDefNode::ArrayDefNode(shared_ptr<Node> a)
+	:UnaryNode(a) {}
+void ArrayDefNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "ArrayDef Node" << endl;
+	this->visitson(x + 1);
+}
+ArrayDefGroupNode::ArrayDefGroupNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void ArrayDefGroupNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "ArrayDefGroup Node" << endl;
+	this->visitson(x + 1);
 }
 StmtsNode::StmtsNode(shared_ptr<Node> a, shared_ptr<Node> b)
 	:BinaryNode(a, b) {}
@@ -472,6 +486,9 @@ bool parseJSON();
 bool parseVarDecl();
 bool parseVarDeclBase();
 bool parseRvalue();
+bool parseSonExpr();
+bool parseArrayDefGroup();
+bool parseArrayDef();
 
 bool parseStmts() {
 	auto SavedLexPos1 = lex.getNowPos();
@@ -920,6 +937,14 @@ bool parseStmtBase() {
 bool parseRvalue() {
 	auto SavedLexPos1 = lex.getNowPos();
 	auto SavedRoot1 = root;
+	if (parseArrayDef()) {
+		return 1;
+	}
+	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
 	if (parseObjDef()) {
 		return 1;
 	}
@@ -938,6 +963,72 @@ bool parseRvalue() {
 	SavedRoot1 = root;
 	if (parseExpr()) {
 		return 1;
+	}
+	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}bool parseArrayDef() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_LSB) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		auto ReadinToken2 = lex.readNextToken();
+		if (ReadinToken2.id == LEX_RSB) {
+			root = shared_ptr<Node>(new ArrayDefNode(shared_ptr<Node>(new NullNode()))); return 1;
+		}
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+		SavedLexPos2 = lex.getNowPos();
+		SavedRoot2 = root;
+		if (parseArrayDefGroup()) {
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_RSB) {
+				root = shared_ptr<Node>(new ArrayDefNode(root));
+
+				return 1;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+		}
+		refresh();
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}
+bool parseArrayDefGroup() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	if (parseExpr()) {
+		int flag = 1;
+		while (flag) {
+			flag = 0;
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_COM) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				if (parseExpr()) {
+					root = shared_ptr<Node>(new ArrayDefGroupNode(SavedRoot4, root));
+					flag = 1;
+					continue;
+				}
+				refresh();
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+			return 1;
+		}
 	}
 	refresh();
 	lex.setNowPos(SavedLexPos1);
@@ -1265,8 +1356,11 @@ bool parseArgu() {
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
 	refresh();
+
+
 	return 1;
 }
+
 bool parseLValue() {
 	auto SavedLexPos1 = lex.getNowPos();
 	auto SavedRoot1 = root;
@@ -1276,25 +1370,58 @@ bool parseLValue() {
 			flag = 0;
 			auto SavedLexPos3 = lex.getNowPos();
 			auto SavedRoot3 = root;
-			auto ReadinToken3 = lex.readNextToken();
-			if (ReadinToken3.id == LEX_POT) {
-				auto SavedLexPos4 = lex.getNowPos();
-				auto SavedRoot4 = root;
-				if (parseIDBase()) {
-					root = shared_ptr<Node>(new SonNode(SavedRoot4, root));
-					flag = 1;
-					continue;
-				}
-				refresh();
-				lex.setNowPos(SavedLexPos4);
-				root = SavedRoot4;
+			if (parseSonExpr()) {
+				root = shared_ptr<Node>(new SonNode(SavedRoot3, root));
+				flag = 1;
+				continue;
 			}
+			refresh();
 			lex.setNowPos(SavedLexPos3);
 			root = SavedRoot3;
 			return 1;
 		}
 	}
 	refresh();
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}
+bool parseSonExpr() {
+	auto SavedLexPos1 = lex.getNowPos();
+	auto SavedRoot1 = root;
+	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_LSB) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		if (parseExpr()) {
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_RSB) {
+				return 1;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+		}
+		refresh();
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_POT) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		if (parseIDBase()) {
+			return 1;
+		}
+		refresh();
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
 	return 0;
