@@ -1,2 +1,35 @@
-﻿  main.cpp
+﻿  eval.cpp
+d:\database\vscode\weakscript\weakscript\eval.cpp(310): warning C4553: “==”: 运算符不起任何作用；是否是有意使用“=”的?
+d:\database\vscode\weakscript\weakscript\eval.cpp(326): warning C4553: “==”: 运算符不起任何作用；是否是有意使用“=”的?
+d:\database\vscode\weakscript\weakscript\eval.cpp(342): warning C4553: “==”: 运算符不起任何作用；是否是有意使用“=”的?
+d:\database\vscode\weakscript\weakscript\eval.cpp(343): warning C4804: “-”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(439): warning C4804: “/”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(441): warning C4804: “/”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(443): warning C4804: “/”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(445): warning C4804: “/”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(452): warning C4804: “%”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(454): warning C4804: “%”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(484): warning C4804: “~”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(491): warning C4805: “&”: 在操作中将类型“__int64”与类型“const bool”混合不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(493): warning C4805: “&”: 在操作中将类型“bool”与类型“const __int64”混合不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(500): warning C4805: “|”: 在操作中将类型“__int64”与类型“const bool”混合不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(502): warning C4805: “|”: 在操作中将类型“bool”与类型“const __int64”混合不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(531): warning C4804: “>”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(533): warning C4804: “>”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(535): warning C4804: “>”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(537): warning C4804: “>”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(550): warning C4804: “<”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(552): warning C4804: “<”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(554): warning C4804: “<”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(556): warning C4804: “<”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(569): warning C4804: “>=”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(571): warning C4804: “>=”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(573): warning C4804: “>=”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(575): warning C4804: “>=”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(588): warning C4804: “<=”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(590): warning C4804: “<=”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(592): warning C4804: “<=”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(594): warning C4804: “<=”: 在操作中使用类型“bool”不安全
+d:\database\vscode\weakscript\weakscript\eval.cpp(932): warning C4018: “<=”: 有符号/无符号不匹配
+d:\database\vscode\weakscript\weakscript\eval.cpp(982): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
   WeakScript.vcxproj -> D:\DataBase\VSCODE\WeakScript\Debug\WeakScript.exe

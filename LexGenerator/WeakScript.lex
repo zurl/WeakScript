@@ -42,6 +42,7 @@ NULL null
 TRUE true
 FALSE false
 OF of
+IMPORT import
 
 
 #control symbol 

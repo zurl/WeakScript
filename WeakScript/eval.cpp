@@ -872,11 +872,11 @@ Value FuncCallNode::eval() {
 	return Value();
 }
 Value ArguDefNode::eval() {
-	TmpVarTable->defineVar(((IDNode *)left.get())->value);
-	FuncCallTmp.emplace_back(((IDNode *)left.get())->value);
+	TmpVarTable->defineVar(dynamic_pointer_cast<IDNode>(left)->value);
+	FuncCallTmp.emplace_back(dynamic_pointer_cast<IDNode>(left)->value);
 	if (typeid(*right) == typeid(IDNode)) {
-		TmpVarTable->defineVar(((IDNode *)right.get())->value);
-		FuncCallTmp.emplace_back(((IDNode *)right.get())->value);
+		TmpVarTable->defineVar(dynamic_pointer_cast<IDNode>(right)->value);
+		FuncCallTmp.emplace_back(dynamic_pointer_cast<IDNode>(right)->value);
 	}
 	else right->eval();
 	return Value();
@@ -972,6 +972,8 @@ Value & SonNode::get() {
 	if (t == nullptr)
 		throw UnexpectRunTimeException();
 	auto var = t->get();
+	if( var.type != Value::Type::Obj)
+		throw UnexpectRunTimeException();
 	auto r = std::dynamic_pointer_cast<IDNode>(this->right);
 	if (r == nullptr) {
 		//subscript
