@@ -9,6 +9,7 @@ class Value {
 
 public:
 	Value();
+	Value(const bool &t);
 	Value(const string &t);
 	Value(const long long &t);
 	Value(const double &t);
@@ -47,10 +48,11 @@ public:
 
 	bool isTrue();
 	enum class Type {
-		Null, Int, Real, Str, Obj ,Func
+		Null, Int, Real, Str, Obj ,Func,boolean
 	};
 	Type type;
 	union {
+		bool Boolean;
 		long long Int;
 		double Real;
 		string * Str;

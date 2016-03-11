@@ -186,6 +186,12 @@ Value::Value() {
 		delete data.Str;
 	type = Type::Null;
 }
+Value::Value(const bool &t) {
+	if (type == Type::Str)
+		delete data.Str;
+	this->type = Type::Boolean;
+	this->data.Boolean = t;
+}
 Value::Value(const string &t) {
 	if (type == Type::Str)
 		delete data.Str;
@@ -210,6 +216,9 @@ Value::Value(const Value &t) {
 	if (type == Type::Str)
 		delete data.Str;
 	switch (t.type) {
+	case Type::Boolean:
+		this->type = Type::Boolean;
+		this->data.Boolean = t.data.Boolean;
 	case Type::Int:
 		this->type = Type::Int;
 		this->data.Int = t.data.Int;
@@ -243,6 +252,9 @@ Value & Value::operator= (const Value & t) {
 	if (type == Type::Str)
 		delete data.Str;
 	switch (t.type) {
+	case Type::Boolean:
+		this->type = Type::Boolean;
+		this->data.Boolean = t.data.Boolean;
 	case Type::Int:
 		this->type = Type::Int;
 		this->data.Int = t.data.Int;
@@ -287,10 +299,28 @@ bool Value::isTrue() {
 		return false;
 	if (this->type == Type::Int && this->data.Int == 0)
 		return false;
+	if (this->type == Type::Boolean && this->data.Boolean == false)
+		return false;
 	return true;
 }
 
 
+void Value::upcastToInt() {
+	if (this->type == Type::Boolean) {
+		this->type = Type::Int;
+		this->data.Int = this->data.Boolean;
+	}
+}
+void Value::upcastToReal() {
+	if (this->type == Type::Boolean) {
+		this->type = Type::Real;
+		this->data.Real = this->data.Boolean;
+	}
+	if (this->type == Type::Int) {
+		this->type = Type::Real;
+		this->data.Real = this->data.Int;
+	}
+}
 Value Value::operator++ () {
 	if (this->type == Type::Int) {
 		this->data.Int++;

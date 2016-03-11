@@ -16,7 +16,7 @@ This is a project contains WeakScirpt's Interpreter and its util
   
 3. Expample 
 A program for finding prime numbers.
-<pre> 
+```JavaScript
 {  
 	var system;
 	system.prime = func(){
@@ -37,9 +37,18 @@ A program for finding prime numbers.
 	}
 	system.prime();
 }  
-</pre>
+```
 
-4.Grammer Reference  
+4.future
+for..in 
+null
+boolean
+complex String
+this seq
+environment
+
+
+5.Grammer Reference  
 (like a subset of JavaScript)  
   
 Data Type:  

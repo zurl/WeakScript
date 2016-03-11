@@ -8,7 +8,7 @@ extern void initSysFunc();
 int main() {  
 	initSysFunc();  
 	if (parseStmt()) {		
-		root->visit(0);
+		//root->visit(0);
 		root->eval();
 		return 1;
 	}

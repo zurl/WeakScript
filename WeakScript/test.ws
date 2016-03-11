@@ -1,11 +1,13 @@
 {  
+
 	var parent = {
-		a : "nb",
-		b : "cc",
+		a : 'nb',
+		b : 'cc',
 		eee: "fuck"
 	};
-	for ( var x  in parent){
+	for ( var x in parent ){
 		print(x + ",");
 	}
 	
+
 }  

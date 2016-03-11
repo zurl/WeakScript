@@ -16,7 +16,7 @@
 #WeakScript Lex 
 #Version 1.2 Stable
 
-@DEF SLT a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|_
+@DEF SLT a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|_|$
 @DEF NNN 1|2|3|4|5|6|7|8|9|0
 
 @RULE
@@ -38,6 +38,11 @@ BREAK break
 CONTINUE continue
 IN in
 NEW new
+NULL null
+TRUE true
+FALSE false
+OF of
+
 
 #control symbol 
 
@@ -51,6 +56,7 @@ RCB }
 COM ,
 POT .
 COL :
+
 #operatror
 
 SADD \+\+
@@ -79,12 +85,14 @@ BAND \&
 INT -?(NNN)+
 REAL -?(NNN)+.(NNN)+
 
-STRING (\"\a*\")|(\'\a*\')
+STRING (\"|\')\a*(\"|\')
 
 #useless symbol
 
 SPACE \p
 NL \n
 TAB \t
+COMMENTA //\a*\n
+COMMENTB /\*\a*\*/
 
 @END
