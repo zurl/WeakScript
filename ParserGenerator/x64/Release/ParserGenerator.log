@@ -1,0 +1,14 @@
+﻿  main.cpp
+  正在生成代码
+d:\database\vscode\weakscript\parsergenerator\main.cpp(309): warning C4715: “dealrule”: 不是所有的控件路径都返回值
+  All 986 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  ParserGenerator.vcxproj -> D:\DataBase\VSCODE\WeakScript\x64\Release\ParserGenerator.exe
+  ParserGenerator.vcxproj -> D:\DataBase\VSCODE\WeakScript\x64\Release\ParserGenerator.pdb (Full PDB)
+d:\database\vscode\weakscript\parsergenerator\main.cpp(223): warning C6262: 函数使用了堆栈的“24256”个字节: 超过了 /analyze:stacksize '16384'。 请考虑将某些数据移到堆中。
+d:\database\vscode\weakscript\parsergenerator\main.cpp(320): warning C6031: 返回值被忽略: “freopen”。
+d:\database\vscode\weakscript\parsergenerator\main.cpp(323): warning C6031: 返回值被忽略: “freopen”。
+d:\database\vscode\weakscript\parsergenerator\main.cpp(326): warning C6031: 返回值被忽略: “freopen”。
+d:\database\vscode\weakscript\parsergenerator\main.cpp(331): warning C6031: 返回值被忽略: “freopen”。
+d:\database\vscode\weakscript\parsergenerator\main.cpp(333): warning C6031: 返回值被忽略: “freopen”。
+d:\database\vscode\weakscript\parsergenerator\main.cpp(341): warning C6031: 返回值被忽略: “freopen”。

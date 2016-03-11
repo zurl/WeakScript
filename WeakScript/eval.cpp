@@ -305,23 +305,12 @@ bool Value::isTrue() {
 }
 
 
-void Value::upcastToInt() {
-	if (this->type == Type::Boolean) {
-		this->type = Type::Int;
-		this->data.Int = this->data.Boolean;
-	}
-}
-void Value::upcastToReal() {
-	if (this->type == Type::Boolean) {
-		this->type = Type::Real;
-		this->data.Real = this->data.Boolean;
-	}
-	if (this->type == Type::Int) {
-		this->type = Type::Real;
-		this->data.Real = this->data.Int;
-	}
-}
 Value Value::operator++ () {
+	if (this->type == Type::Boolean) {
+		this->type == Type::Int;
+		this->data.Int = this->data.Boolean + 1;
+		return Value();
+	}
 	if (this->type == Type::Int) {
 		this->data.Int++;
 		return Value();
@@ -333,6 +322,11 @@ Value Value::operator++ () {
 	throw CalTypeException(*this);
 }
 Value Value::operator-- () {
+	if (this->type == Type::Boolean) {
+		this->type == Type::Int;
+		this->data.Int = this->data.Boolean - 1;
+		return Value();
+	}
 	if (this->type == Type::Int) {
 		this->data.Int--;
 		return *this;
@@ -344,14 +338,27 @@ Value Value::operator-- () {
 	throw CalTypeException(*this);
 }
 Value Value::operator- () {
+	if (this->type == Type::Boolean) {
+		this->type == Type::Int;
+		this->data.Int = -this->data.Boolean;
+		return Value();
+	}
 	if (this->type == Type::Int)
 		return Value(-this->data.Int);
 	if(this->type == Type::Real)
 		return Value(-this->data.Real);
 	throw CalTypeException(*this);
 }		
+string btos(bool a) {
+	return a == true ? "true" : "false";
+}
 Value Value::operator+ (const Value &t) {
+
 	//For Str
+	if (this->type == Type::Str && t.type == Type::Boolean)
+		return Value(*this->data.Str + btos(t.data.Boolean));
+	if (this->type == Type::Boolean && t.type == Type::Str)
+		return Value(btos(this->data.Boolean) + *t.data.Str);
 	if (this->type == Type::Str && t.type == Type::Str)
 		return Value(*this->data.Str+ *t.data.Str);
 	if (this->type == Type::Int && t.type == Type::Str)
@@ -371,6 +378,14 @@ Value Value::operator+ (const Value &t) {
 		return Value(this->data.Real + t.data.Real);
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value(this->data.Int + t.data.Real);
+	if (this->type == Type::Real && t.type == Type::Boolean)
+		return Value(this->data.Real + t.data.Boolean);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int + t.data.Boolean);
+	if (this->type == Type::Boolean && t.type == Type::Real)
+		return Value(this->data.Boolean + t.data.Real);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean + t.data.Int);
 	throw CalTypeException(*this, t);
 }
 Value Value::operator- (const Value &t) {
@@ -382,6 +397,14 @@ Value Value::operator- (const Value &t) {
 		return Value(this->data.Real - t.data.Real);
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value(this->data.Int - t.data.Real);
+	if (this->type == Type::Real && t.type == Type::Boolean)
+		return Value(this->data.Real - t.data.Boolean);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int - t.data.Boolean);
+	if (this->type == Type::Boolean && t.type == Type::Real)
+		return Value(this->data.Boolean - t.data.Real);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean - t.data.Int);
 	throw CalTypeException(*this, t);
 }
 Value Value::operator* (const Value &t) {
@@ -393,6 +416,14 @@ Value Value::operator* (const Value &t) {
 		return Value(this->data.Real * t.data.Real);
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value(this->data.Int * t.data.Real);
+	if (this->type == Type::Real && t.type == Type::Boolean)
+		return Value(this->data.Real * t.data.Boolean);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int * t.data.Boolean);
+	if (this->type == Type::Boolean && t.type == Type::Real)
+		return Value(this->data.Boolean * t.data.Real);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean * t.data.Int);
 	throw CalTypeException(*this, t);
 }
 Value Value::operator/ (const Value &t) {
@@ -404,103 +435,163 @@ Value Value::operator/ (const Value &t) {
 		return Value(this->data.Real / t.data.Real);
 	if (this->type == Type::Int  && t.type == Type::Real)
 		return Value(this->data.Int / t.data.Real);
+	if (this->type == Type::Real && t.type == Type::Boolean)
+		return Value(this->data.Real / t.data.Boolean);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int / t.data.Boolean);
+	if (this->type == Type::Boolean && t.type == Type::Real)
+		return Value(this->data.Boolean / t.data.Real);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean / t.data.Int);
 	throw CalTypeException(*this, t);
 }
 Value Value::operator% (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
 		return Value(this->data.Int % t.data.Int);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int % t.data.Boolean);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean % t.data.Int);
 	throw CalTypeException(*this,t);
 }
 
 Value Value::operator&& (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int / t.data.Int);
-	throw CalTypeException(*this, t);
+	if (this->type == Type::Int && t.type == Type::Int && this->data.Int != 0 && t.data.Int != 0
+		&& this->type == Type::Boolean && t.type == Type::Int && this->data.Boolean != 0 && t.data.Int != 0
+		&& this->type == Type::Int && t.type == Type::Boolean && this->data.Int != 0 && t.data.Boolean != 0)
+		return Value(true);
+	return Value(false);
 }
 Value Value::operator|| (const Value &t){
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int / t.data.Int);
-	throw CalTypeException(*this, t);
+	if (this->type == Type::Int && t.type == Type::Int && this->data.Int == 0 && t.data.Int == 0
+		|| this->type == Type::Boolean && t.type == Type::Int && this->data.Boolean == 0 && t.data.Int == 0
+		|| this->type == Type::Int && t.type == Type::Boolean && this->data.Int == 0 && t.data.Boolean == 0)
+		return Value(false);
+	return Value(true);
 }
 Value Value::operator! () {
 	if (this->type == Type::Int)
-		return Value((long long)!this->data.Int);
+		return Value(!this->data.Int);
+	if (this->type == Type::Boolean)
+		return Value(!this->data.Boolean);
 	throw CalTypeException(*this);
 }
 
 Value Value::operator~ () {
 	if (this->type == Type::Int)
 		return Value(~this->data.Int);
+	if (this->type == Type::Boolean)
+		return Value((long long)~this->data.Boolean);
 	throw CalTypeException(*this);
 }
 Value Value::operator& (const Value &t){
 	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int / t.data.Int);
+		return Value(this->data.Int & t.data.Int);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int & t.data.Boolean);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean & t.data.Int);
 	throw CalTypeException(*this, t);
 }
 Value Value::operator| (const Value &t){
 	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int / t.data.Int);
+		return Value(this->data.Int | t.data.Int);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int | t.data.Boolean);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean | t.data.Int);
 	throw CalTypeException(*this, t);
 }
 
 Value Value::operator!= (const Value &t) {
-	return Value((long long )!this->operator==(t).data.Int);
+	return Value(!this->operator==(t).data.Int);
 }
 Value Value::operator== (const Value &t) {
 	if (this->type != t.type)
-		return Value((long long)0);
+		return Value(false);
 	if (this->type == Type::Int && this->data.Int == t.data.Int
 		|| this->type == Type::Real && this->data.Real == t.data.Real
 		|| this->type == Type::Str && *this->data.Str == *t.data.Str
 		|| this->type == Type::Func && this->data.Func == t.data.Func
 		|| this->type == Type::Func && this->data.Obj == t.data.Obj
 		)
-		return Value((long long)1);
-	return Value((long long)0);
+		return Value(true);
+	return Value(false);
 }
 Value Value::operator> (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
-		return Value((long long)(this->data.Int > t.data.Int));
+		return Value((this->data.Int > t.data.Int));
 	if (this->type == Type::Real && t.type == Type::Int)
-		return Value((long long)(this->data.Real > t.data.Int));
+		return Value((this->data.Real > t.data.Int));
 	if (this->type == Type::Real && t.type == Type::Real)
-		return Value((long long)(this->data.Real > t.data.Real));
+		return Value((this->data.Real > t.data.Real));
 	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value((long long)(this->data.Int > t.data.Real));
+		return Value((this->data.Int > t.data.Real));
+	if (this->type == Type::Real && t.type == Type::Boolean)
+		return Value(this->data.Real > t.data.Boolean);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int > t.data.Boolean);
+	if (this->type == Type::Boolean && t.type == Type::Real)
+		return Value(this->data.Boolean > t.data.Real);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean > t.data.Int);
 	throw CalTypeException(*this, t);
 }
 Value Value::operator< (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
-		return Value((long long)(this->data.Int < t.data.Int));
+		return Value((this->data.Int < t.data.Int));
 	if (this->type == Type::Real && t.type == Type::Int)
-		return Value((long long)(this->data.Real < t.data.Int));
+		return Value((this->data.Real < t.data.Int));
 	if (this->type == Type::Real && t.type == Type::Real)
-		return Value((long long)(this->data.Real < t.data.Real));
+		return Value((this->data.Real < t.data.Real));
 	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value((long long)(this->data.Int < t.data.Real));
+		return Value((this->data.Int < t.data.Real));
+	if (this->type == Type::Real && t.type == Type::Boolean)
+		return Value(this->data.Real < t.data.Boolean);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int < t.data.Boolean);
+	if (this->type == Type::Boolean && t.type == Type::Real)
+		return Value(this->data.Boolean < t.data.Real);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean < t.data.Int);
 	throw CalTypeException(*this, t);
 }
 Value Value::operator>= (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
-		return Value((long long)(this->data.Int >= t.data.Int));
+		return Value((this->data.Int >= t.data.Int));
 	if (this->type == Type::Real && t.type == Type::Int)
-		return Value((long long)(this->data.Real >= t.data.Int));
+		return Value((this->data.Real >= t.data.Int));
 	if (this->type == Type::Real && t.type == Type::Real)
-		return Value((long long)(this->data.Real >= t.data.Real));
+		return Value((this->data.Real >= t.data.Real));
 	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value((long long)(this->data.Int >= t.data.Real));
+		return Value((this->data.Int >= t.data.Real));
+	if (this->type == Type::Real && t.type == Type::Boolean)
+		return Value(this->data.Real >= t.data.Boolean);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int >= t.data.Boolean);
+	if (this->type == Type::Boolean && t.type == Type::Real)
+		return Value(this->data.Boolean >= t.data.Real);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean >= t.data.Int);
 	throw CalTypeException(*this, t);
 }
 Value Value::operator<= (const Value &t) {
 	if (this->type == Type::Int && t.type == Type::Int)
-		return Value((long long)(this->data.Int <= t.data.Int));
+		return Value((this->data.Int <= t.data.Int));
 	if (this->type == Type::Real && t.type == Type::Int)
-		return Value((long long)(this->data.Real <= t.data.Int));
+		return Value((this->data.Real <= t.data.Int));
 	if (this->type == Type::Real && t.type == Type::Real)
-		return Value((long long)(this->data.Real <= t.data.Real));
+		return Value((this->data.Real <= t.data.Real));
 	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value((long long)(this->data.Int <= t.data.Real));
+		return Value((this->data.Int <= t.data.Real));
+	if (this->type == Type::Real && t.type == Type::Boolean)
+		return Value(this->data.Real <= t.data.Boolean);
+	if (this->type == Type::Int  && t.type == Type::Boolean)
+		return Value(this->data.Int <= t.data.Boolean);
+	if (this->type == Type::Boolean && t.type == Type::Real)
+		return Value(this->data.Boolean <= t.data.Real);
+	if (this->type == Type::Boolean  && t.type == Type::Int)
+		return Value(this->data.Boolean <= t.data.Int);
 	throw CalTypeException(*this, t);
 }
 Value StmtsNode::eval() {
@@ -677,18 +768,18 @@ Value BlockNode::eval() {
 Value AndNode::eval() {
 	if (left->eval().isTrue()) {
 		if (right->eval().isTrue()) {
-			return Value((long long)1);
+			return Value(true);
 		}
 	}
-	return Value((long long)0);
+	return Value(false);
 }
 Value OrNode::eval() {
 	if (!left->eval().isTrue()) {
 		if (!right->eval().isTrue()) {
-			return Value((long long)0);
+			return Value(false);
 		}
 	}
-	return Value((long long)1);
+	return Value(true);
 }
 Value BandNode::eval() {
 	Value t1 = left->eval();

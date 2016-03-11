@@ -1,0 +1,10 @@
+﻿  main.cpp
+main.cpp(29): warning C4018: “<=”: 有符号/无符号不匹配
+main.cpp(279): warning C4018: “<”: 有符号/无符号不匹配
+main.cpp(281): warning C4018: “<”: 有符号/无符号不匹配
+  正在生成代码
+d:\database\vscode\weakscript\parsergenerator\main.cpp(309): warning C4715: “dealrule”: 不是所有的控件路径都返回值
+  All 986 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  ParserGenerator.vcxproj -> D:\DataBase\VSCODE\WeakScript\Release\ParserGenerator.exe
+  ParserGenerator.vcxproj -> D:\DataBase\VSCODE\WeakScript\Release\ParserGenerator.pdb (Full PDB)

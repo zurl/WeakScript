@@ -48,7 +48,7 @@ public:
 
 	bool isTrue();
 	enum class Type {
-		Null, Int, Real, Str, Obj ,Func,boolean
+		Null, Int, Real, Str, Obj ,Func,Boolean
 	};
 	Type type;
 	union {

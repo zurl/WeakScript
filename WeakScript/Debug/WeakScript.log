@@ -1,0 +1,9 @@
+﻿  Lex.cpp
+d:\database\vscode\weakscript\weakscript\lex.cpp(155): warning C4018: “<=”: 有符号/无符号不匹配
+  正在生成代码...
+  正在跳过...(未检测到相关更改)
+  parser.cpp
+  main.cpp
+  eval.cpp
+  System.cpp
+  WeakScript.vcxproj -> D:\DataBase\VSCODE\WeakScript\Debug\WeakScript.exe
