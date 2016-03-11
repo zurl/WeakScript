@@ -1,11 +1,13 @@
 #include "common.h"
 #include "parser.h"
 
+#include<algorithm>
 bool onDisplay = 0;
 extern Lex lex("test.ws");
 extern shared_ptr<Node> root;
 extern bool parseStmt();
 extern void initSysFunc();
+
 bool FileInput() {
 	initSysFunc();
 	if (parseStmt()) {
