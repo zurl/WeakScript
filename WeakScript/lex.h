@@ -64,6 +64,7 @@ class Lex{
 private:
 	Reg reg;
 	ifstream fin;
+	bool display;
 	int line = 0;
 	list<Token> tokenList;
 	list<Token>::iterator now = tokenList.begin();
@@ -75,6 +76,7 @@ public:
 	list<Token>::iterator getNowPos();
 	void setNowPos(list<Token>::iterator a);
 	Lex(string filename);
+	Lex();
 };
 
 class SymbolTable{

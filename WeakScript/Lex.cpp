@@ -37,7 +37,7 @@ type(0), reverse(_reverse), l(_l), r(_r){}
 Reg::MatchRule::MatchRule(bool _reverse, char _v) :
 type(1), reverse(_reverse), l(_v){}
 bool Reg::MatchRule::Match(const char &a){
-	if (a == '\"')return 0;
+	if (a == '\"' || a == '\'')return 0;
 	if (type) return reverse ^ (a == l);
 	else return reverse ^ (a >= l && a <= r);
 }
@@ -140,14 +140,30 @@ bool Reg::acceptChar(const char &c, const char &ruleChar){
 
 bool Lex::loadToken(){
 	string t; Token tk;
-	if (std::getline(fin, t)){
-		line++;
-		if (!reg.accept(t, *this))return 0;
-		return 1;
+	if (display == 0) {
+		if (std::getline(fin, t)) {
+			t += '\n';
+			line++;
+			if (!reg.accept(t, *this))return 0;
+			return 1;
+		}
+		else {
+			return 0;
+		}
+		
 	}
-	else{
-		return 0;
+	else {
+		if (std::getline(cin, t)) {
+			t += '\n';
+			line++;
+			if (!reg.accept(t, *this))return 0;
+			return 1;
+		}
+		else {
+			return 0;
+		}
 	}
+	
 	return 1;
 }
 string retstr(string a) {
@@ -156,7 +172,7 @@ string retstr(string a) {
 	return ret;
 }
 void Lex::acceptToken(int id, string &name){
-	if (id == LEX_SPACE || id == LEX_TAB || id == LEX_NL)return;
+	if (id == LEX_SPACE || id == LEX_TAB || id == LEX_NL || id== LEX_COMMENTA || id == LEX_COMMENTB)return;
 	if (id == LEX_ID  ||id ==LEX_INT || id == LEX_REAL)
 		tokenList.emplace_back(id, name, line);
 	else if(id == LEX_STRING)tokenList.emplace_back(id, retstr(name), line);
@@ -180,23 +196,15 @@ list<Token>::iterator Lex::getNowPos(){
 void Lex::setNowPos(list<Token>::iterator a){
 	now = a;
 }
-/*
-Token Lex::readInNextToken(){
-	while (tokenList.size() <= 1){
-		if (!loadToken()){
-			return Token(-1);
-		}
-	}
-	auto ret = tokenList.begin();
-	ret++;
-	tokenList.pop_front();
-	now = tokenList.begin();
-	now++;
-	return *ret;
-}
-*/
 Lex::Lex(string filename)
-:fin(filename)
+	:fin(filename), display(0)
+{
+	reg.loadDFA("WeakScript.dfa");
+	tokenList.emplace_front(-1);
+	now = tokenList.begin();
+}
+Lex::Lex()
+: display(1)
 {
 	reg.loadDFA("WeakScript.dfa");
 	tokenList.emplace_front(-1);

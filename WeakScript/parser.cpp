@@ -1,5 +1,5 @@
 #include "parser.h"
-Lex lex("test.ws");
+extern Lex lex;
 shared_ptr<Node> root = shared_ptr<Node>(new NullNode());
 extern map<string, int> IdHashTable;
 extern int IdHashTableNow;

@@ -1,13 +1,14 @@
 #include "common.h"
 #include "parser.h"
 
-extern Lex lex;
+bool onDisplay = 0;
+extern Lex lex("test.ws");
 extern shared_ptr<Node> root;
 extern bool parseStmt();
 extern void initSysFunc();
-int main() {  
-	initSysFunc();  
-	if (parseStmt()) {		
+bool FileInput() {
+	initSysFunc();
+	if (parseStmt()) {
 		//root->visit(0);
 		root->eval();
 		return 1;
@@ -16,5 +17,17 @@ int main() {
 	// return 0;
 	// for (int i = 1; i <= 30; i++)
 	// out(lex.readNextToken());
+	return 0;
+}
+
+
+void InterInput() {
+	initSysFunc(); 
+	lex = Lex();
+}
+
+int main() {  
+	FileInput();
+	//InterInput();
 	return 0;
 }
