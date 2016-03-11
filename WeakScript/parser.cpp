@@ -65,7 +65,7 @@ ostream& operator << (ostream &o, const Value& a) {
 		cout << a.data.Boolean;
 	case Value::Type::Int:
 		cout << a.data.Int;
-		break;
+		break; 
 	case Value::Type::Real:
 		cout << a.data.Real;
 		break;

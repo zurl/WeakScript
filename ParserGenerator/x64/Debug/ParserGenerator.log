@@ -1,4 +1,0 @@
-﻿  main.cpp
-d:\database\vscode\weakscript\parsergenerator\main.cpp(309): warning C4715: “dealrule”: 不是所有的控件路径都返回值
-  ParserGenerator.vcxproj -> D:\DataBase\VSCODE\WeakScript\x64\Debug\ParserGenerator.exe
-  ParserGenerator.vcxproj -> D:\DataBase\VSCODE\WeakScript\x64\Debug\ParserGenerator.pdb (Partial PDB)
