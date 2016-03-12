@@ -130,6 +130,14 @@ ValueNode::ValueNode(double _value)
 ValueNode::ValueNode(long long _value)
 	: val(_value), UnitNode() {
 }
+ValueNode::ValueNode(bool _value)
+	: val(_value), UnitNode() {
+}
+ValueNode::ValueNode()
+	: val(), UnitNode() {
+}
+
+
 void ValueNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
 	switch (val.type) {
@@ -1351,6 +1359,33 @@ bool parseValue() {
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
 	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_NULL) {
+		root = shared_ptr<Node>(new ValueNode());
+		return 1;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_FALSE) {
+		root = shared_ptr<Node>(new ValueNode(false));
+		return 1;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_TRUE) {
+		root = shared_ptr<Node>(new ValueNode(true));
+		return 1;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
+	ReadinToken1 = lex.readNextToken();
 	if (ReadinToken1.id == LEX_STRING) {
 		root = shared_ptr<Node>(new ValueNode(ReadinToken1.name));
 		return 1;

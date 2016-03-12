@@ -113,6 +113,9 @@ $Value
 | %INT									@ * Value string _stoi(ReadinToken1.name) @
 | %REAL									@ * Value string _stod(ReadinToken1.name) @
 | %STRING								@ * Value string ReadinToken1.name @
+| %TRUE									@ * Value string ReadinToken1.name @
+| %FALSE								@ * Value string ReadinToken1.name @
+| %NULL									@ * Value string ReadinToken1.name @
 | $LValue								@ # @
 | $LValue %LP $Argu %RP                 @ FuncCall 2 SavedRoot2 root @
 :RULEEND

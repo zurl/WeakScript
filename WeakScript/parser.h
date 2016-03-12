@@ -119,6 +119,8 @@ public:
 	ValueNode(string _value);
 	ValueNode(double _value);
 	ValueNode(long long _value);
+	ValueNode(bool  _value);
+	ValueNode();
 	virtual void visit(int x);
 	virtual Value eval();
 };

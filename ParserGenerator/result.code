@@ -821,7 +821,7 @@ bool parseStmtBase(){
     if (ReadinToken1.id == LEX_RETURN) {
         auto SavedLexPos2 = lex.getNowPos(); 
         auto SavedRoot2 = root;
-        if (parseExpr()) {
+        if (parseRvalue()) {
             root = shared_ptr<Node> (new ReturnNode(root));
             return 1;
         }
@@ -853,7 +853,7 @@ bool parseStmtBase(){
     root = SavedRoot1;
     SavedLexPos1 = lex.getNowPos(); 
     SavedRoot1 = root;
-    if (parseExpr()) {
+    if (parseRvalue()) {
         return 1;
     }
     refresh();
@@ -1033,7 +1033,7 @@ bool parseJSON(){
         if (ReadinToken2.id == LEX_COL) {
             auto SavedLexPos3 = lex.getNowPos(); 
             auto SavedRoot3 = root;
-            if (parseValue()) {
+            if (parseRvalue()) {
                 root = shared_ptr<Node> (new JsonNode(SavedRoot2,root));
                 return 1;
             }
@@ -1087,7 +1087,7 @@ bool parseArrayDef(){
 bool parseArrayDefGroup(){
     auto SavedLexPos1 = lex.getNowPos(); 
     auto SavedRoot1 = root;
-    if (parseExpr()) {
+    if (parseRvalue()) {
         int flag = 1;
         while (flag) {
             flag = 0;
@@ -1097,7 +1097,7 @@ bool parseArrayDefGroup(){
             if (ReadinToken3.id == LEX_COM) {
                 auto SavedLexPos4 = lex.getNowPos(); 
                 auto SavedRoot4 = root;
-                if (parseExpr()) {
+                if (parseRvalue()) {
                     root = shared_ptr<Node> (new ArrayDefGroupNode(SavedRoot4,root));
                     flag = 1;
                     continue;
@@ -1209,7 +1209,7 @@ bool parseValueGroup(){
     if (ReadinToken1.id == LEX_LP) {
         auto SavedLexPos2 = lex.getNowPos(); 
         auto SavedRoot2 = root;
-        if (parseExpr()) {
+        if (parseRvalue()) {
             auto SavedLexPos3 = lex.getNowPos(); 
             auto SavedRoot3 = root;
             auto ReadinToken3 = lex.readNextToken();
@@ -1318,6 +1318,33 @@ bool parseValue(){
     SavedLexPos1 = lex.getNowPos(); 
     SavedRoot1 = root;
     auto ReadinToken1 = lex.readNextToken();
+    if (ReadinToken1.id == LEX_NULL) {
+        root = shared_ptr<Node> (new ValueNode(ReadinToken1.name));
+        return 1;
+    }
+    lex.setNowPos(SavedLexPos1);
+    root = SavedRoot1;
+    SavedLexPos1 = lex.getNowPos(); 
+    SavedRoot1 = root;
+    ReadinToken1 = lex.readNextToken();
+    if (ReadinToken1.id == LEX_FALSE) {
+        root = shared_ptr<Node> (new ValueNode(ReadinToken1.name));
+        return 1;
+    }
+    lex.setNowPos(SavedLexPos1);
+    root = SavedRoot1;
+    SavedLexPos1 = lex.getNowPos(); 
+    SavedRoot1 = root;
+    ReadinToken1 = lex.readNextToken();
+    if (ReadinToken1.id == LEX_TRUE) {
+        root = shared_ptr<Node> (new ValueNode(ReadinToken1.name));
+        return 1;
+    }
+    lex.setNowPos(SavedLexPos1);
+    root = SavedRoot1;
+    SavedLexPos1 = lex.getNowPos(); 
+    SavedRoot1 = root;
+    ReadinToken1 = lex.readNextToken();
     if (ReadinToken1.id == LEX_STRING) {
         root = shared_ptr<Node> (new ValueNode(ReadinToken1.name));
         return 1;
@@ -1347,7 +1374,7 @@ bool parseValue(){
 bool parseArgu(){
     auto SavedLexPos1 = lex.getNowPos(); 
     auto SavedRoot1 = root;
-    if (parseExpr()) {
+    if (parseRvalue()) {
         int flag = 1;
         while (flag) {
             flag = 0;
@@ -1357,7 +1384,7 @@ bool parseArgu(){
             if (ReadinToken3.id == LEX_COM) {
                 auto SavedLexPos4 = lex.getNowPos(); 
                 auto SavedRoot4 = root;
-                if (parseExpr()) {
+                if (parseRvalue()) {
                     root = shared_ptr<Node> (new ArguNode(SavedRoot4,root));
                     flag = 1;
                     continue;
@@ -1408,7 +1435,7 @@ bool parseSonExpr(){
     if (ReadinToken1.id == LEX_LSB) {
         auto SavedLexPos2 = lex.getNowPos(); 
         auto SavedRoot2 = root;
-        if (parseExpr()) {
+        if (parseRvalue()) {
             auto SavedLexPos3 = lex.getNowPos(); 
             auto SavedRoot3 = root;
             auto ReadinToken3 = lex.readNextToken();
