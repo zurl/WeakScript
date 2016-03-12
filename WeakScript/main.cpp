@@ -29,7 +29,6 @@ bool FileInput() {
 
 extern ostream & operator<< (ostream &, const Value &);
 
-shared_ptr<Node> saved_root;
 
 string info = "WeakScript 0.2.11 alpha on win32\nCopyright 2015-2016 zcy. All Rights Reserved\nThis project is under the MIT license: http://www.opensource.org/licenses/mit-license.php\n";
 bool InterInput() {
@@ -40,7 +39,7 @@ bool InterInput() {
 	while (1) {
 		cout << ">>>";
 		if (parseStmt()) {
-			root->visit(0);
+			//root->visit(0);
 			try {
 				auto x = root->eval();if (dynamic_pointer_cast<SimpleNode>(root) != nullptr)
 					cout << x << endl;
