@@ -1,8 +1,8 @@
 #include "parser.h"
 extern Lex lex;
 shared_ptr<Node> root = shared_ptr<Node>(new NullNode());
-extern map<string, int> IdHashTable;
-extern int IdHashTableNow;
+//extern map<string, int> IdHashTable;
+//extern int IdHashTableNow;
 UnitNode::UnitNode() {}
 void UnitNode::visitson(int x) {}
 void UnitNode::del() {}
@@ -95,12 +95,13 @@ void VarDeclrsNode::visit(int x) {
 }
 VarDeclrAssignNode::VarDeclrAssignNode(string _value, shared_ptr<Node> b)
 	:UnaryNode(b) {
-	auto t = IdHashTable.find(_value);
+	/*auto t = IdHashTable.find(_value);
 	if (t == IdHashTable.end()) {
 		IdHashTable.emplace(_value, ++IdHashTableNow);
 		value = IdHashTableNow;
 	}
-	else value = t->second;
+	else value = t->second;*/
+	value = _value;
 }
 void VarDeclrAssignNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
@@ -109,12 +110,13 @@ void VarDeclrAssignNode::visit(int x) {
 }
 VarDeclrNode::VarDeclrNode(string _value)
 	:UnitNode() {
-	auto t = IdHashTable.find(_value);
+	/*auto t = IdHashTable.find(_value);
 	if (t == IdHashTable.end()) {
 		IdHashTable.emplace(_value, ++IdHashTableNow);
 		value = IdHashTableNow;
 	}
-	else value = t->second;
+	else value = t->second;*/
+	value = _value;
 }
 void VarDeclrNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
@@ -316,17 +318,15 @@ void ArguNode::visit(int x) {
 }
 IDNode::IDNode(string _value)
 	:UnitNode() {
-	auto t = IdHashTable.find(_value);
+	/*auto t = IdHashTable.find(_value);
 	if (t == IdHashTable.end()) {
 		IdHashTable.emplace(_value, ++IdHashTableNow);
 		value = IdHashTableNow;
 	}
-	else value = t->second;		
-}
-IDNode::IDNode(int _value)
-	:UnitNode() {
+	else value = t->second;		*/
 	value = _value;
 }
+
 void IDNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
 	cout << "ID Node :" << value << endl;

@@ -133,14 +133,14 @@ public:
 };
 class VarDeclrAssignNode : public UnaryNode {
 public:
-	int value;
+	string value;
 	VarDeclrAssignNode(string _value, shared_ptr<Node> a);
 	virtual void visit(int x);
 	virtual Value eval();
 };
 class VarDeclrNode : public UnitNode {
 public:
-	int value;
+	string value;
 	VarDeclrNode(string _value);
 	virtual void visit(int x);
 	virtual Value eval();
@@ -308,9 +308,8 @@ public:
 };
 class IDNode : public UnitNode , public ILvalue {
 public:
-	int value;
+	string value;
 	IDNode(string _value);
-		IDNode(int _value);
 	virtual void visit(int x);
 	virtual Value eval();
 	virtual Value & get();

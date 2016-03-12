@@ -1,15 +1,15 @@
 #include "parser.h"
-map<string, int> IdHashTable;
-int IdHashTableNow;
+//map<string, int> IdHashTable;
+//int IdHashTableNow;
 
-int getNameInt(string x) {
-	auto t = IdHashTable.find(x);
-	if (t == IdHashTable.end()) {
-		IdHashTable.emplace(x, ++IdHashTableNow);
-		return IdHashTableNow;
-	}
-	else return t->second;
-}
+//int getNameInt(string x) {
+//	auto t = IdHashTable.find(x);
+//	if (t == IdHashTable.end()) {
+//		IdHashTable.emplace(x, ++IdHashTableNow);
+//		return IdHashTableNow;
+//	}
+//	else return t->second;
+//}
 class MyExpection   {
 	//Abs Class
 };
@@ -37,19 +37,19 @@ class UnableAssignValueException : public MyExpection {
 }; 
 class UndefinedVariableException : public MyExpection {
 public:
-	UndefinedVariableException(int name) {
+	UndefinedVariableException(string name) {
 
 	}
 };
 class UnableCallVarException : public MyExpection {
 public:
-	UnableCallVarException(int name) {
+	UnableCallVarException(string name) {
 
 	}
 };
 class RedefinedVariableException : public MyExpection {
 public:
-	RedefinedVariableException(int name) {
+	RedefinedVariableException(string name) {
 		
 	}
 };
@@ -77,20 +77,20 @@ public:
 class VariableTable {
 public:
 	VariableTable *prev;
-	unordered_map<int,Value*> table;
+	unordered_map<string,Value*> table;
 	VariableTable() {
 		prev = nullptr;  
 	}
 	VariableTable(VariableTable * t) {
 		prev = t;
 	}
-	void defineVar( int name ) {
+	void defineVar(string name ) {
 		auto t = table.find(name);
 		if (t != table.end()) 
 			throw RedefinedVariableException(name);
 		this->table.emplace(name, new Value());	
 	}
-	Value & getVarOld( const int & name )  {
+	Value & getVarOld( const string & name )  {
 		auto t = table.find(name);
 		if (t == table.end()) {
 			if (prev == nullptr)
@@ -102,7 +102,7 @@ public:
 			return *t->second;
 		}
 	}
-	inline Value & getVar(const int & name) {
+	inline Value & getVar(const string & name) {
 		auto ptr = this;
 		while (ptr != nullptr) {
 			auto t = ptr->table.find(name);
@@ -128,27 +128,25 @@ public:
 	}
 };
 
-
-const int __proto__ = getNameInt("__proto__");
 class Object {
 public:
 	bool mark;
-	unordered_map<int, Value*> data;
+	unordered_map<string, Value*> data;
 	Object() {
 
 	}
-	Value & __getVar(int name) {
+	Value & __getVar(string name) {
 		auto t = data.find(name);
 		if (t != data.end())return *t->second;
 		else {
-			auto pro = data.find(__proto__);
+			auto pro = data.find("__proto__");
 			if (pro == data.end() || pro->second->type != Value::Type::Obj)
-				throw UndefinedVariableException(1);
+				throw UndefinedVariableException("");
 			else
 				return pro->second->data.Obj->__getVar(name);
 		}
 	}
-	inline Value & getVar(int name) {
+	inline Value & getVar(string name) {
 		try {
 			return this->__getVar(name);
 		}
@@ -808,7 +806,7 @@ Value FuncDefNode::eval() {
 	FuncTable.emplace_back(new Function(*this));
 	return Value(*(FuncTable.end() - 1));
 }
-vector<int> FuncCallTmp;
+vector<string> FuncCallTmp;
 int FuncCallTmpNow;
 Value FuncCallNode::eval() {
 	//var check
@@ -828,7 +826,7 @@ Value FuncCallNode::eval() {
 
 	//Argus
 	//null
-	FuncCallTmp = vector<int>(); FuncCallTmpNow = 0;
+	FuncCallTmp = vector<string>(); FuncCallTmpNow = 0;
 	auto func = var.data.Func->data;
 	if (typeid(*func->left) == typeid(NullNode)) {
 		//
@@ -911,13 +909,13 @@ Value SysFuncNode::eval() {
 	return func();
 }
 
-void addSysFunc(string nameO,vector<string> argsO,SysFunc func) {
+void addSysFunc(string name,vector<string> args,SysFunc func) {
 	//define var
-	int name = getNameInt(nameO);
+	/*auto name = getNameInt(nameO);
 	vector<int> args;
 	for (auto &t : argsO) {
 		args.emplace_back(getNameInt(t));
-	}
+	}*/
 	NowVarTable->defineVar(name);
 	shared_ptr<Node> arugs;
 	//null;
@@ -936,11 +934,10 @@ void addSysFunc(string nameO,vector<string> argsO,SysFunc func) {
 	NowVarTable->getVar(name).type = Value::Type::Func;
 	NowVarTable->getVar(name).data.Func = new Function(*new FuncDefNode(arugs, shared_ptr<Node>(new SysFuncNode(func))));
 }
-const int __x = getNameInt("x");
 void initSysFunc() {
 	addSysFunc("print", {"x"}, []() {
 		// Value print(x)
-		cout << NowVarTable->getVar(__x);
+		cout << NowVarTable->getVar("x");
 		throw ReturnException();
 		return Value();
 	});
@@ -979,10 +976,10 @@ Value & SonNode::get() {
 		//subscript
 		auto ret = this->right->eval();
 		if (ret.type == Value::Type::Int) {
-			return var.data.Obj->getVar(-ret.data.Int);			
+			return var.data.Obj->getVar(itos(ret.data.Int));			
 		}
 		else if (ret.type == Value::Type::Str) {
-			return var.data.Obj->getVar(getNameInt(*ret.data.Str));
+			return var.data.Obj->getVar(*ret.data.Str);
 		}
 		else {
 			throw UnexpectSubscriptException();
@@ -1020,18 +1017,18 @@ Value ArrayDefNode::eval() {
 Value ArrayDefGroupNode::eval() {
 	if (dynamic_pointer_cast<ArrayDefGroupNode>(this->left) == nullptr) {
 		++TempArrayIndex;
-		TempObject->getVar(-TempArrayIndex) = this->left->eval();
+		TempObject->getVar(itos(TempArrayIndex)) = this->left->eval();
 	}
 	else {
 		this->left->eval();
 	}
 	++TempArrayIndex;
-	TempObject->getVar(-TempArrayIndex) = this->right->eval();
+	TempObject->getVar(itos(TempArrayIndex)) = this->right->eval();
 	return Value();
 }
 
 Value JsonNode::eval() {
-	int x = ((IDNode*)(this->left.get()))->value;
+	auto x = ((IDNode*)(this->left.get()))->value;
 	TempObject->getVar(x) = this->right->eval();
 	return Value();
 }
