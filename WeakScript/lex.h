@@ -64,12 +64,13 @@ class Lex{
 private:
 	Reg reg;
 	ifstream fin;
-	bool display;
 	int line = 0;
 	list<Token> tokenList;
 	list<Token>::iterator now = tokenList.begin();
 	bool loadToken();
 public:
+	void reset();
+	bool display;
 	void acceptToken(int id, string &name);
 	Token readNextToken();
 	//Token readInNextToken();

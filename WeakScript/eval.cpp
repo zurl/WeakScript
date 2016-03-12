@@ -10,9 +10,7 @@
 //	}
 //	else return t->second;
 //}
-class MyExpection   {
-	//Abs Class
-};
+string MyExpection::getErrorMessage() { return ""; }
 class CalTypeException : public MyExpection {
 public:
 	CalTypeException(Value a, Value b) {
@@ -21,30 +19,49 @@ public:
 	CalTypeException(Value a) {
 
 	}
+	virtual string getErrorMessage() {
+		return "TypeError: unsupported operand type(s)";
+	}
 }; 
 class UnexpectRunTimeException : public MyExpection{
-
+	virtual string getErrorMessage() {
+		return "RunTimeError: UnexpectRunTimeException";
+	}
 };
 class UnableTraveralException : public MyExpection {
-
+	virtual string getErrorMessage() {
+		return "UnableTraveralException";
+	}
 };
 
 
 class UnableAssignValueException : public MyExpection {
-
-}; class UnexpectSubscriptException : public MyExpection {
-
+	virtual string getErrorMessage() {
+		return "UnableAssignValueException";
+	}
+};
+class UnexpectSubscriptException : public MyExpection {
+	virtual string getErrorMessage() {
+		return "TypeError: object can't apply subscript operatonr";
+	}
 }; 
 class UndefinedVariableException : public MyExpection {
 public:
 	UndefinedVariableException(string name) {
 
 	}
+	virtual string getErrorMessage() {
+		return "NameError: name is not defined";
+	}
+
 };
 class UnableCallVarException : public MyExpection {
 public:
 	UnableCallVarException(string name) {
 
+	}
+	virtual string getErrorMessage() {
+		return "SyntaxError: 'continue' outside loop";
 	}
 };
 class RedefinedVariableException : public MyExpection {
@@ -52,12 +69,19 @@ public:
 	RedefinedVariableException(string name) {
 		
 	}
+	virtual string getErrorMessage() {
+		return "VariableError : redefine variable";
+	}
 };
 class BreakException : public MyExpection {
-
+	virtual string getErrorMessage() {
+		return "SyntaxError: 'break' outside loop";
+	}
 };
 class ContinueException : public MyExpection {
-	
+	virtual string getErrorMessage() {
+		return "SyntaxError: 'continue' outside loop";
+	}
 };
 class ReturnException : public MyExpection {
 private:
@@ -123,8 +147,8 @@ class Function {
 public:
 	bool mark;
 	shared_ptr<FuncDefNode> data;
-	Function(FuncDefNode & t) {
-		data = shared_ptr<FuncDefNode>(&t);
+	Function(FuncDefNode * t) {
+		data = shared_ptr<FuncDefNode>(t);
 	}
 };
 
@@ -686,7 +710,7 @@ Value ForeachNode::eval() {
 	auto datavar = dynamic_pointer_cast<ILvalue>(this->mid)->get();
 	if (datavar.type == Value::Type::Obj) {
 		for (auto & x : datavar.data.Obj->data) {
-			NowVarTable->getVar(varname) = *x.second;
+			NowVarTable->getVar(varname) = x.first;
 			try {
 				right->eval();
 			}
@@ -803,7 +827,7 @@ Value AssignNode::eval() {
 	return Value();
 }
 Value FuncDefNode::eval() {
-	FuncTable.emplace_back(new Function(*this));
+	FuncTable.emplace_back(new Function(new FuncDefNode(this->left,this->right)));
 	return Value(*(FuncTable.end() - 1));
 }
 vector<string> FuncCallTmp;
@@ -932,7 +956,7 @@ void addSysFunc(string name,vector<string> args,SysFunc func) {
 		}
 	}
 	NowVarTable->getVar(name).type = Value::Type::Func;
-	NowVarTable->getVar(name).data.Func = new Function(*new FuncDefNode(arugs, shared_ptr<Node>(new SysFuncNode(func))));
+	NowVarTable->getVar(name).data.Func = new Function(new FuncDefNode(arugs, shared_ptr<Node>(new SysFuncNode(func))));
 }
 void initSysFunc() {
 	addSysFunc("print", {"x"}, []() {
@@ -1058,4 +1082,7 @@ Value VarDeclrsNode::eval() {
 	this->left->eval();
 	this->right->eval();
 	return Value();
+}
+Value SimpleNode::eval() {
+	return this->son->eval();
 }

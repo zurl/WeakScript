@@ -16,4 +16,10 @@
 #include "WeakScriptLex.h"
 using namespace std;
 
+class MyExpection {
+	//Abs Class
+public:
+	virtual string getErrorMessage();
+};
+
 #endif

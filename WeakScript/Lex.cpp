@@ -137,7 +137,12 @@ bool Reg::acceptChar(const char &c, const char &ruleChar){
 	}
 }
 
-
+void Lex::reset() {
+	fflush(stdin);
+	tokenList.clear();
+	tokenList.emplace_front(-1);
+	now = tokenList.begin();
+}
 bool Lex::loadToken(){
 	string t; Token tk;
 	if (display == 0) {

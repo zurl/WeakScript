@@ -419,5 +419,11 @@ public:
 	virtual void visit(int x);
 	virtual Value eval();
 };
+class SimpleNode : public UnaryNode {
+public:
+	SimpleNode(shared_ptr<Node> a);
+	virtual void visit(int x);
+	virtual Value eval();
+};
 #endif // !PARSER_H
 

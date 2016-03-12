@@ -34,7 +34,7 @@ string Lex::replace(const string &str, const string &key, const string &value){
 string Lex::getStr(string str, int num){
 	int k = 0;
 	str = str + " ";
-	for (int i = 1; i <= num; i++){
+	for (unsigned i = 1; i <= num; i++){
 		int last = k;
 		while (k < str.length() && str[k] != ' ')k++;
 		if (k == str.length())return "";

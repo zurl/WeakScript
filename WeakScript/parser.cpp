@@ -1,5 +1,5 @@
 #include "parser.h"
-extern Lex lex;
+Lex lex;
 shared_ptr<Node> root = shared_ptr<Node>(new NullNode());
 //extern map<string, int> IdHashTable;
 //extern int IdHashTableNow;
@@ -92,6 +92,13 @@ void VarDeclrsNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
 	cout << "VarDeclrs Node" << endl;
 	this->visitson(x + 1);
+}
+SimpleNode::SimpleNode(shared_ptr<Node> a)
+	:UnaryNode(a) {}
+void SimpleNode::visit(int x) {
+	//for (int i = 1; i <= x; i++)printf("    ");
+	//cout << "VarDeclrs Node" << endl;
+	this->visitson(x);
 }
 VarDeclrAssignNode::VarDeclrAssignNode(string _value, shared_ptr<Node> b)
 	:UnaryNode(b) {
@@ -1317,6 +1324,7 @@ bool parseValueGroup() {
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
 	if (parseValue()) {
+		root = shared_ptr<Node>(new SimpleNode(root));
 		return 1;
 	}
 	refresh();
