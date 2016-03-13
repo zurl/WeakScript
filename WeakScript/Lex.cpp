@@ -90,7 +90,7 @@ bool Reg::accept(string str, Lex &cbk){
 				}
 				else{
 					//Error Doing
- 					cout << "fuck" << endl;
+ 					cout << "Lex Error:please check you syntax" << endl;
 					return 0;
 				}
 				break;

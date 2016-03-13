@@ -22,6 +22,7 @@ $Stmt
 
 :RULE
 $StmtBase
+| %
 | $Rvalue								@ # @
 | %BREAK								@ Break 0 @
 | %CONTINUE								@ Continue 0 @
@@ -118,6 +119,7 @@ $Value
 | %NULL									@ * Value string ReadinToken1.name @
 | $LValue								@ # @
 | $LValue %LP $Argu %RP                 @ FuncCall 2 SavedRoot2 root @
+| %NEW $LValue %LP $Argu %RP            @ NewFuncCall 2 SavedRoot3 root @
 :RULEEND
 
 :RULE

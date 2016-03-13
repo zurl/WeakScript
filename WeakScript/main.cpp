@@ -41,7 +41,8 @@ bool InterInput() {
 		if (parseStmt()) {
 			//root->visit(0);
 			try {
-				auto x = root->eval();if (dynamic_pointer_cast<SimpleNode>(root) != nullptr)
+				auto x = root->eval();
+				if (dynamic_pointer_cast<SimpleNode>(root) != nullptr)
 					cout << x << endl;
 				//else cout << endl;
 			}

@@ -40,11 +40,9 @@ A program for finding prime numbers.
 ```
 
 4.future
-for..in 
-null
-complex String
 this seq
 environment
+str endl
 
 
 5.Grammer Reference  

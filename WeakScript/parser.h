@@ -47,6 +47,7 @@ public:
 	Value operator<= (const Value & t);
 
 	bool isTrue();
+	string toString()const;
 	enum class Type {
 		Null, Int, Real, Str, Obj ,Func,Boolean
 	};
@@ -148,6 +149,12 @@ public:
 class StmtsNode : public BinaryNode {
 public:
 	StmtsNode(shared_ptr<Node> a, shared_ptr<Node> b);
+	virtual void visit(int x);
+	virtual Value eval();
+}; 
+class NewFuncCallNode : public BinaryNode {
+public:
+	NewFuncCallNode(shared_ptr<Node> a, shared_ptr<Node> b);
 	virtual void visit(int x);
 	virtual Value eval();
 };

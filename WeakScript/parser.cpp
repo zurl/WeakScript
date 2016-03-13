@@ -60,22 +60,7 @@ void QuadNode::del() {
 	right->del();
 }
 ostream& operator << (ostream &o, const Value& a) {
-	switch (a.type) {
-	case Value::Type::Boolean:
-		cout << a.data.Boolean;
-	case Value::Type::Int:
-		cout << a.data.Int;
-		break; 
-	case Value::Type::Real:
-		cout << a.data.Real;
-		break;
-	case Value::Type::Str:
-		cout << *a.data.Str;
-		break;
-	case Value::Type::Null:
-		cout << "Null";
-		break;
-	}
+	o << a.toString();
 	return o;
 }
 
@@ -182,7 +167,14 @@ long long _stoi(string x) {
 	long long ret;
 	is >> ret;
 	return ret;
-} 
+}     
+NewFuncCallNode::NewFuncCallNode(shared_ptr<Node> a, shared_ptr<Node> b)
+	:BinaryNode(a, b) {}
+void NewFuncCallNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "NewFuncCall Node" << endl;
+}
+
 ArrayDefNode::ArrayDefNode(shared_ptr<Node> a)
 	:UnaryNode(a) {}
 void ArrayDefNode::visit(int x) {
@@ -531,7 +523,7 @@ bool parseStmts() {
 	refresh();
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
-	return 0;
+	return 1;
 }
 bool parseStmt() {
 	auto SavedLexPos1 = lex.getNowPos();
@@ -994,6 +986,7 @@ bool parseStmtBase() {
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
 	if (parseRvalue()) {
+		root = shared_ptr<Node>(new SimpleNode(root));
 		return 1;
 	}
 	refresh();
@@ -1324,7 +1317,6 @@ bool parseValueGroup() {
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
 	if (parseValue()) {
-		root = shared_ptr<Node>(new SimpleNode(root));
 		return 1;
 	}
 	refresh();
@@ -1335,6 +1327,43 @@ bool parseValueGroup() {
 bool parseValue() {
 	auto SavedLexPos1 = lex.getNowPos();
 	auto SavedRoot1 = root;
+	auto ReadinToken1 = lex.readNextToken();
+	if (ReadinToken1.id == LEX_NEW) {
+		auto SavedLexPos2 = lex.getNowPos();
+		auto SavedRoot2 = root;
+		if (parseLValue()) {
+			auto SavedLexPos3 = lex.getNowPos();
+			auto SavedRoot3 = root;
+			auto ReadinToken3 = lex.readNextToken();
+			if (ReadinToken3.id == LEX_LP) {
+				auto SavedLexPos4 = lex.getNowPos();
+				auto SavedRoot4 = root;
+				if (parseArgu()) {
+					auto SavedLexPos5 = lex.getNowPos();
+					auto SavedRoot5 = root;
+					auto ReadinToken5 = lex.readNextToken();
+					if (ReadinToken5.id == LEX_RP) {
+						root = shared_ptr<Node>(new NewFuncCallNode(SavedRoot3, root));
+						return 1;
+					}
+					lex.setNowPos(SavedLexPos5);
+					root = SavedRoot5;
+				}
+				refresh();
+				lex.setNowPos(SavedLexPos4);
+				root = SavedRoot4;
+			}
+			lex.setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+		}
+		refresh();
+		lex.setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
+	lex.setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex.getNowPos();
+	SavedRoot1 = root;
 	if (parseLValue()) {
 		auto SavedLexPos2 = lex.getNowPos();
 		auto SavedRoot2 = root;
@@ -1366,9 +1395,9 @@ bool parseValue() {
 	root = SavedRoot1;
 	SavedLexPos1 = lex.getNowPos();
 	SavedRoot1 = root;
-	auto ReadinToken1 = lex.readNextToken();
+	ReadinToken1 = lex.readNextToken();
 	if (ReadinToken1.id == LEX_NULL) {
-		root = shared_ptr<Node>(new ValueNode());
+		root = shared_ptr<Node>(new ValueNode(ReadinToken1.name));
 		return 1;
 	}
 	lex.setNowPos(SavedLexPos1);
@@ -1377,7 +1406,7 @@ bool parseValue() {
 	SavedRoot1 = root;
 	ReadinToken1 = lex.readNextToken();
 	if (ReadinToken1.id == LEX_FALSE) {
-		root = shared_ptr<Node>(new ValueNode(false));
+		root = shared_ptr<Node>(new ValueNode(ReadinToken1.name));
 		return 1;
 	}
 	lex.setNowPos(SavedLexPos1);
@@ -1386,7 +1415,7 @@ bool parseValue() {
 	SavedRoot1 = root;
 	ReadinToken1 = lex.readNextToken();
 	if (ReadinToken1.id == LEX_TRUE) {
-		root = shared_ptr<Node>(new ValueNode(true));
+		root = shared_ptr<Node>(new ValueNode(ReadinToken1.name));
 		return 1;
 	}
 	lex.setNowPos(SavedLexPos1);

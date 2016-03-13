@@ -278,6 +278,12 @@ public:
     virtual void visit(int x) ;
     virtual Value eval() ;
 };
+class NewFuncCallNode : public BinaryNode {
+public:
+    NewFuncCallNode(shared_ptr<Node> a,shared_ptr<Node> b);
+    virtual void visit(int x) ;
+    virtual Value eval() ;
+};
 class FuncCallNode : public BinaryNode {
 public:
     FuncCallNode(shared_ptr<Node> a,shared_ptr<Node> b);
