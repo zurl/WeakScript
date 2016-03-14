@@ -48,7 +48,8 @@ bool InterInput() {
 			}
 			catch (MyExpection &e ) {
 				cout << e.getErrorMessage()<<endl;
-			}		//if (x.type == Value::Type::Null)
+			}
+			//if (x.type == Value::Type::Null)
 			//return 1;
 		}
 		else {

@@ -265,6 +265,7 @@ public:
 class ILvalue {
 public:
 	virtual Value & get();
+	virtual string getName();
 };
 class ObjDefNode : public UnaryNode {
 public:
@@ -320,6 +321,7 @@ public:
 	virtual void visit(int x);
 	virtual Value eval();
 	virtual Value & get();
+	virtual string getName();
 };
 class SonNode : public BinaryNode, public ILvalue {
 public:
@@ -327,6 +329,7 @@ public:
 	virtual void visit(int x);
 	virtual Value eval();
 	virtual Value & get();
+	virtual string getName();
 };
 
 

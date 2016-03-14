@@ -523,7 +523,7 @@ bool parseStmts() {
 	refresh();
 	lex.setNowPos(SavedLexPos1);
 	root = SavedRoot1;
-	return 1;
+	return 0;
 }
 bool parseStmt() {
 	auto SavedLexPos1 = lex.getNowPos();
@@ -1191,6 +1191,15 @@ bool parseFuncDef() {
 						refresh();
 						lex.setNowPos(SavedLexPos6);
 						root = SavedRoot6;
+					/*	SavedLexPos6 = lex.getNowPos();
+						SavedRoot6 = root;
+						auto ReadinToken6 = lex.readNextToken();
+						if (ReadinToken6.id == LEX_RCB) {
+							root = shared_ptr<Node>(new FuncDefNode(SavedRoot4, shared_ptr<Node>(new NullNode())));
+							return 1;
+						}
+						lex.setNowPos(SavedLexPos6);
+						root = SavedRoot6;*/
 					}
 					lex.setNowPos(SavedLexPos5);
 					root = SavedRoot5;

@@ -115,23 +115,27 @@ public:
 #include<unordered_map>	
 class VariableTable {
 public:
-	VariableTable *prev;
-	unordered_map<string, Value*> table;
-	VariableTable() {
+	string name;
+	shared_ptr<VariableTable> prev;
+	unordered_map<string, Value*> *table;
+	int isCreatePointer = 1;
+	VariableTable(string _name):name(_name) {
+		table = new unordered_map<string, Value*>();
 		prev = nullptr;
 	}
-	VariableTable(VariableTable * t) {
+	VariableTable(shared_ptr<VariableTable> t, string _name) :name(_name) {
+		table = new unordered_map<string, Value*>();
 		prev = t;
 	}
 	void defineVar(string name) {
-		auto t = table.find(name);
-		if (t != table.end())
+		auto t = table->find(name);
+		if (t != table->end())
 			throw RedefinedVariableException(name);
-		this->table.emplace(name, new Value());
+		this->table->emplace(name, new Value());
 	}
 	Value & getVarOld(const string & name) {
-		auto t = table.find(name);
-		if (t == table.end()) {
+		auto t = table->find(name);
+		if (t == table->end()) {
 			if (prev == nullptr)
 				throw UndefinedVariableException(name);
 			else
@@ -144,28 +148,29 @@ public:
 	inline Value & getVar(const string & name) {
 		auto ptr = this;
 		while (ptr != nullptr) {
-			auto t = ptr->table.find(name);
-			if (t != ptr->table.end())return *t->second;
-			ptr = ptr->prev;
+			auto t = ptr->table->find(name);
+			if (t != ptr->table->end())return *t->second;
+			ptr = ptr->prev.get();
 		}
 		//return *new Value();
 		throw UndefinedVariableException(name);
 	}
+	void showAllVariable() {
+		if (this->prev != nullptr)
+			this->prev->showAllVariable();
+		cout << "At : " << this->name << endl;
+		for (auto &x : *table) {
+			cout << "    " << x.first << " : "<< (*x.second).toString() << endl;
+		}
+	}
 	~VariableTable() {
-		for (auto &x : table)
+		for (auto &x : *table)
 			delete x.second;
 	}
 };
 
 
-class Function {
-public:
-	bool mark;
-	shared_ptr<FuncDefNode> data;
-	Function(FuncDefNode * t) {
-		data = shared_ptr<FuncDefNode>(t);
-	}
-};
+
 
 class Object {
 public:
@@ -198,14 +203,26 @@ public:
 		for (auto &x : data)
 			delete x.second;
 	}
-};
+}; 
+shared_ptr<VariableTable> NowVarTable(new VariableTable("Global"));
+shared_ptr<VariableTable> GlobalVarTable = NowVarTable;
+shared_ptr<VariableTable> TmpVarTable = nullptr;
+Object * TempObject = nullptr;
+class Function : public Object {
+public:
+	//bool mark;
 
+	shared_ptr<VariableTable> CallerTable;
+	shared_ptr<FuncDefNode> func;
+	Function(FuncDefNode * t)
+		:Object() {
+		CallerTable = NowVarTable;
+		func = shared_ptr<FuncDefNode>(t);
+	}
+};
 vector<Function *> FuncTable;
 vector<Object *> ObjTable;
-VariableTable *NowVarTable = new VariableTable();
-VariableTable *GlobalVarTable = NowVarTable;
-VariableTable *TmpVarTable = nullptr;
-Object * TempObject = nullptr;
+
 
 string itos(long long x) {
 	ostringstream os;
@@ -803,11 +820,11 @@ Value BreakNode::eval() {
 	return Value();
 }
 Value BlockNode::eval() {
-	NowVarTable = new VariableTable(NowVarTable);
+	NowVarTable = shared_ptr<VariableTable>(new VariableTable(NowVarTable, "Anonymous Code Block;"));
 	son->eval();
 	auto tmp = NowVarTable;
 	NowVarTable = NowVarTable->prev;
-	delete tmp;
+	//delete tmp;
 	return Value();
 }
 Value AndNode::eval() {
@@ -855,6 +872,7 @@ Value FuncDefNode::eval() {
 }
 vector<string> FuncCallTmp;
 int FuncCallTmpNow;
+shared_ptr<VariableTable> caller;
 Value FuncCallNode::eval() {
 	//var check
 	auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
@@ -867,12 +885,14 @@ Value FuncCallNode::eval() {
 		throw UnexpectRunTimeException();
 	//read args list & create variable;
 
+	auto func = var.data.Func->func;
+	TmpVarTable = var.data.Func->CallerTable;
 
-	TmpVarTable = new VariableTable(GlobalVarTable);
+
 	//Argus
 	//null
 	FuncCallTmp = vector<string>(); FuncCallTmpNow = 0;
-	auto func = var.data.Func->data;
+	
 	if (typeid(*func->left) == typeid(NullNode)) {
 		//
 	}
@@ -896,22 +916,23 @@ Value FuncCallNode::eval() {
 	//render;
 
 	//switch var table
-	auto SavedVarTable = NowVarTable;
+	caller = NowVarTable;
+		auto SavedVarTable = NowVarTable;
 	NowVarTable = TmpVarTable;
-
+	
 	try {
-		var.data.Func->data->right->eval();
+		var.data.Func->func->right->eval();
 	}
 	catch (ReturnException e) {
 		auto tmp = NowVarTable;
 		NowVarTable = SavedVarTable;
-		delete tmp;
+		//delete tmp;
 		return e.getValue();
 	}
 	//return 
 	auto tmp = NowVarTable;
 	NowVarTable = SavedVarTable;
-	delete tmp;
+	//delete tmp;
 	return Value();
 }
 Value ArguDefNode::eval() {
@@ -980,7 +1001,7 @@ void addSysFunc(string name, vector<string> args, SysFunc func) {
 	NowVarTable->getVar(name).data.Func = new Function(new FuncDefNode(arugs, shared_ptr<Node>(new SysFuncNode(func))));
 }
 void initSysFunc() {
-	addSysFunc("print", { "x" }, []() {
+	addSysFunc("print", {"x"}, []() {
 		// Value print(x)
 		cout << NowVarTable->getVar("x");
 		throw ReturnException();
@@ -1004,6 +1025,10 @@ void initSysFunc() {
 		throw ReturnException(Value(x));
 		return Value();
 	});
+	addSysFunc("showAllVars", {}, []() {
+		caller->showAllVariable();
+		return Value();
+	});
 	addSysFunc("exit", {}, []() {
 		exit(0);
 		return Value();
@@ -1012,6 +1037,9 @@ void initSysFunc() {
 
 Value & ILvalue::get() {
 	return *new Value();
+}
+string ILvalue::getName() {
+	return "";
 }
 Value & SonNode::get() {
 	auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
@@ -1040,8 +1068,17 @@ Value & SonNode::get() {
 	}
 
 }
+
+string SonNode::getName() {
+	return dynamic_pointer_cast<ILvalue>(this->left)->getName() +"."+ dynamic_pointer_cast<ILvalue>(this->right)->getName();
+}
+
 Value & IDNode::get() {
 	return NowVarTable->getVar(this->value);
+}
+
+string IDNode::getName() {
+	return this->value;
 }
 Value SonNode::eval() {
 	return this->get();
