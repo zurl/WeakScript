@@ -40,6 +40,11 @@ class UnableTraveralException : public MyExpection {
 		return "UnableTraveralException";
 	}
 };
+class UnableUseSonOperatorException : public MyExpection {
+	virtual string getErrorMessage() {
+		return "UnableUseSonOperatorException";
+	}
+};
 
 
 class UnableAssignValueException : public MyExpection {
@@ -71,7 +76,7 @@ public:
 
 	}
 	virtual string getErrorMessage() {
-		return "SyntaxError: 'continue' outside loop";
+		return "UnableCallVarException";
 	}
 };
 class RedefinedVariableException : public MyExpection {
@@ -199,13 +204,23 @@ public:
 			return this->__getVar(name);
 		}
 	}
+	string toString() {
+		string str = "{\n";
+		bool flag = 0;
+		for (auto &x : data) {
+			str += x.first + " : " + x.second->toString();
+			if (flag = 1) str += ",\n";
+			else { flag = 1; str += "\n"; }
+		}
+		return str + "}";
+	}
 	~Object() {
 		for (auto &x : data)
 			delete x.second;
 	}
 }; 
 shared_ptr<VariableTable> NowVarTable(new VariableTable("Global"));
-shared_ptr<VariableTable> GlobalVarTable = NowVarTable;
+//shared_ptr<VariableTable> GlobalVarTable = NowVarTable;
 shared_ptr<VariableTable> TmpVarTable = nullptr;
 Object * TempObject = nullptr;
 class Function : public Object {
@@ -249,7 +264,7 @@ string Value::toString()const {
 	case Type::Null:
 		return "Null";
 	case Type::Obj:
-		return "[Object]";
+		return this->data.Obj->toString();
 	}
 	return "";
 }
@@ -369,7 +384,7 @@ bool Value::isTrue() {
 
 Value Value::operator++ () {
 	if (this->type == Type::Boolean) {
-		this->type == Type::Int;
+		this->type = Type::Int;
 		this->data.Int = this->data.Boolean + 1;
 		return Value();
 	}
@@ -385,7 +400,7 @@ Value Value::operator++ () {
 }
 Value Value::operator-- () {
 	if (this->type == Type::Boolean) {
-		this->type == Type::Int;
+		this->type = Type::Int;
 		this->data.Int = this->data.Boolean - 1;
 		return Value();
 	}
@@ -401,7 +416,7 @@ Value Value::operator-- () {
 }
 Value Value::operator- () {
 	if (this->type == Type::Boolean) {
-		this->type == Type::Int;
+		this->type = Type::Int;
 		this->data.Int = -this->data.Boolean;
 		return Value();
 	}
@@ -861,7 +876,7 @@ extern ostream & operator<< (ostream &, const Value &);
 Value AssignNode::eval() {
 	auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
 	if (t == nullptr)
-		throw UnexpectRunTimeException();
+		throw UnableAssignValueException();
 	Value & temp = t->get();
 	temp = right->eval();
 	return Value();
@@ -882,11 +897,11 @@ Value FuncCallNode::eval() {
 	//func check;
 	if (var.type != Value::Type::Func)
 		//throw UnableCallVarException(((IDNode *)left.get())->value);
-		throw UnexpectRunTimeException();
+		throw UnableCallVarException(t->getName());
 	//read args list & create variable;
 
 	auto func = var.data.Func->func;
-	TmpVarTable = var.data.Func->CallerTable;
+	TmpVarTable = shared_ptr<VariableTable>(new VariableTable(var.data.Func->CallerTable,t->getName()));
 
 
 	//Argus
@@ -1046,17 +1061,17 @@ Value & SonNode::get() {
 	if (t == nullptr)
 		throw UnexpectRunTimeException();
 	auto var = t->get();
-	if (var.type != Value::Type::Obj)
-		throw UnexpectRunTimeException();
+	if (var.type != Value::Type::Obj && var.type != Value::Type::Func)
+		throw UnableUseSonOperatorException();
 	auto r = std::dynamic_pointer_cast<IDNode>(this->right);
 	if (r == nullptr) {
 		//subscript
 		auto ret = this->right->eval();
 		if (ret.type == Value::Type::Int) {
-			return var.data.Obj->getVar(itos(ret.data.Int));
+			return var.type == Value::Type::Obj?var.data.Obj->getVar(itos(ret.data.Int)): var.data.Func->getVar(itos(ret.data.Int));
 		}
 		else if (ret.type == Value::Type::Str) {
-			return var.data.Obj->getVar(*ret.data.Str);
+			return var.type == Value::Type::Obj ? var.data.Obj->getVar(*ret.data.Str) : var.data.Func->getVar(itos(ret.data.Int));
 		}
 		else {
 			throw UnexpectSubscriptException();
@@ -1152,65 +1167,75 @@ Value SimpleNode::eval() {
 
 Value NewFuncCallNode::eval() {
 	//var check
-	//auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
-	//if (t == nullptr)
-	//	throw UnableAssignValueException();
-	//auto var = t->get();
-	////func check;
-	//if (var.type != Value::Type::Func)
-	//	//throw UnableCallVarException(((IDNode *)left.get())->value);
-	//	throw UnexpectRunTimeException();
-	////read args list & create variable;
+
+	auto FuncNamePtr = std::dynamic_pointer_cast<ILvalue>(this->left);
+	if (FuncNamePtr == nullptr)
+		throw UnableAssignValueException();
+
+	auto func = FuncNamePtr->get();
+	//func check;
+	if (func.type != Value::Type::Func)
+		//throw UnableCallVarException(((IDNode *)left.get())->value);
+		throw UnableCallVarException(FuncNamePtr->getName());
+	//read args list & create variable;
+
+	//auto func = var.data.Func->func;
+	TmpVarTable = shared_ptr<VariableTable>(new VariableTable(func.data.Func->CallerTable, FuncNamePtr->getName()));
 
 
-	//TmpVarTable = new VariableTable(GlobalVarTable);
-	////Argus
-	////null
-	//FuncCallTmp = vector<string>(); FuncCallTmpNow = 0;
-	//auto func = var.data.Func->data;
-	//if (typeid(*func->left) == typeid(NullNode)) {
-	//	//
-	//}
-	////sigle
-	//else if (typeid(*func->left) == typeid(IDNode)) {
-	//	TmpVarTable->defineVar(((IDNode *)func->left.get())->value);
-	//	FuncCallTmp.emplace_back(((IDNode *)func->left.get())->value);
-	//	if (typeid(*this->right) != typeid(ArguNode)) {
-	//		TmpVarTable->getVar(((IDNode *)func->left.get())->value) = this->right->eval();
-	//	}
-	//	else this->right->eval();
-	//}
-	////more
-	//else {
-	//	func->left->eval();
-	//	if (typeid(*this->right) != typeid(ArguNode)) {
-	//		TmpVarTable->getVar(FuncCallTmp[FuncCallTmpNow]) = this->right->eval();
-	//	}
-	//	else this->right->eval();
-	//}
-	////render;
+	//Argus
+	//null
+	FuncCallTmp = vector<string>(); FuncCallTmpNow = 0;
 
-	////switch var table
-	//auto SavedVarTable = NowVarTable;
-	//NowVarTable = TmpVarTable;
-	//NowVarTable->defineVar("this");
-	//auto temp = new Object();
-	//ObjTable.emplace_back(temp);
-	//NowVarTable->getVar("this") = new Value(temp);
-	//try {
-	//	var.data.Func->data->right->eval();
-	//}
-	//catch (ReturnException e) {
-	//	auto x = &NowVarTable->getVar("this");
-	//	auto tmp = NowVarTable;
-	//	NowVarTable = SavedVarTable;
-	//	delete tmp;
-	//	x->data.Obj->getVar("__proto__") = 
-	//	return new Value(x);
-	//}
-	////return 
-	//auto tmp = NowVarTable;
-	//NowVarTable = SavedVarTable;
+	auto funcPtr = func.data.Func->func;
+	if (typeid(*funcPtr->left) == typeid(NullNode)) {
+		//
+	}
+	//sigle
+	else if (typeid(*funcPtr->left) == typeid(IDNode)) {
+		TmpVarTable->defineVar(((IDNode *)funcPtr->left.get())->value);
+		FuncCallTmp.emplace_back(((IDNode *)funcPtr->left.get())->value);
+		if (typeid(*this->right) != typeid(ArguNode)) {
+			TmpVarTable->getVar(((IDNode *)funcPtr->left.get())->value) = this->right->eval();
+		}
+		else this->right->eval();
+	}
+	//more
+	else {
+		funcPtr->left->eval();
+		if (typeid(*this->right) != typeid(ArguNode)) {
+			TmpVarTable->getVar(FuncCallTmp[FuncCallTmpNow]) = this->right->eval();
+		}
+		else this->right->eval();
+	}
+	//render;
+
+	//switch var table
+	caller = NowVarTable;
+	auto SavedVarTable = NowVarTable;
+	NowVarTable = TmpVarTable;
+	NowVarTable->defineVar("this");
+	NowVarTable->getVar("this")= new Object();
+	auto & tmpThis = NowVarTable->getVar("this");
+	tmpThis.data.Obj->getVar("__proto__") = func.data.Func->getVar("prototype");
+	tmpThis.data.Obj->getVar("constructor") = func.data.Func;
+	try {
+		funcPtr->right->eval();
+	}
+	catch (ReturnException e) {
+		auto ttmp =  Value(NowVarTable->getVar("this"));
+		auto tmp = NowVarTable;
+		NowVarTable = SavedVarTable;
+		//delete tmp;
+		//return e.getValue();
+		return ttmp;
+	}
+	//return 
+	auto ttmp = Value(NowVarTable->getVar("this"));
+	auto tmp = NowVarTable;
+	NowVarTable = SavedVarTable;
 	//delete tmp;
-	return Value();
+	//return Value();
+	return ttmp;
 }
+
