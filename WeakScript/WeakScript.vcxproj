@@ -64,14 +64,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ConstString.cpp" />
     <ClCompile Include="eval.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="object.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="System.cpp" />
+    <ClCompile Include="Value.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
+    <ClInclude Include="eval.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="parser.h" />
   </ItemGroup>

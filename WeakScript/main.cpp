@@ -1,4 +1,6 @@
 #include "common.h"
+#include "Lex.h"
+#include "eval.h"
 #include "parser.h"
 #include<algorithm>
 
@@ -30,7 +32,7 @@ bool FileInput() {
 extern ostream & operator<< (ostream &, const Value &);
 
 
-string info = "WeakScript 0.2.11 alpha on win32\nCopyright 2015-2016 zcy. All Rights Reserved\nThis project is under the MIT license: http://www.opensource.org/licenses/mit-license.php\n";
+string info = "WeakScript 0.5.0 stable on win32\nCopyright 2015-2016 zcy. All Rights Reserved\nThis project is under the MIT license: http://www.opensource.org/licenses/mit-license.php\n";
 bool InterInput() {
 	string code;
 	initSysFunc(); 
@@ -61,7 +63,9 @@ bool InterInput() {
 	}
 }
 
+extern void initConstString();
 int main() {  
+	initConstString();
 #ifndef d
 	FileInput();
 #else

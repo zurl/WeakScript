@@ -1,6 +1,8 @@
 #include "parser.h"
+#include "Lex.h"
 Lex lex;
 shared_ptr<Node> root = shared_ptr<Node>(new NullNode());
+extern int EncodeString(string);
 //extern map<string, int> IdHashTable;
 //extern int IdHashTableNow;
 UnitNode::UnitNode() {}
@@ -93,7 +95,7 @@ VarDeclrAssignNode::VarDeclrAssignNode(string _value, shared_ptr<Node> b)
 		value = IdHashTableNow;
 	}
 	else value = t->second;*/
-	value = _value;
+	value = EncodeString(_value);
 }
 void VarDeclrAssignNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
@@ -108,7 +110,7 @@ VarDeclrNode::VarDeclrNode(string _value)
 		value = IdHashTableNow;
 	}
 	else value = t->second;*/
-	value = _value;
+	value = EncodeString(_value);
 }
 void VarDeclrNode::visit(int x) {
 	for (int i = 1; i <= x; i++)printf("    ");
@@ -323,7 +325,7 @@ IDNode::IDNode(string _value)
 		value = IdHashTableNow;
 	}
 	else value = t->second;		*/
-	value = _value;
+	value = EncodeString( _value);
 }
 
 void IDNode::visit(int x) {
@@ -1946,5 +1948,3 @@ bool parseFact() {
 	root = SavedRoot1;
 	return 0;
 }
-
-

@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "eval.h"
 //map<string, int> IdHashTable;
 //int IdHashTableNow;
 
@@ -10,26 +11,53 @@
 //	}
 //	else return t->second;
 //}
+extern int Sprototype;
+extern int Sthis;
+extern int S__proto__;
+extern int Ssystem;
+extern int Sconstructor;
+
+shared_ptr<VariableTable> caller;
+shared_ptr<VariableTable> NowVarTable(new VariableTable("Global"));
+//shared_ptr<VariableTable> GlobalVarTable = NowVarTable;
+shared_ptr<VariableTable> TmpVarTable = nullptr;
+Object * TempObject = nullptr;
+std::vector<Function *> FuncTable;
+std::vector<Object *> ObjTable;
+
+unordered_map<int, string> EncodeHashTable;
+unordered_map<string, int> DecodeHashTable;
+int NowEncodeNum = 0;
+
+int EncodeString(string x) {
+	auto tmp = DecodeHashTable.find(x);
+	if (tmp == DecodeHashTable.end()) {
+		int now = ++NowEncodeNum;
+		EncodeHashTable.emplace(now, x);
+		DecodeHashTable.emplace(x, now);
+		return now;
+	}
+	else {
+		return tmp->second;			
+	}
+}
+
+string DecodeString(int x) {
+	return EncodeHashTable.find(x)->second;
+}
+
 string MyExpection::getErrorMessage() { return ""; }
-class CalTypeException : public MyExpection {
-private:
-	int flag;
-	Value c, d;
-public:
-	CalTypeException(Value a, Value b)
-		:c(a), d(b), flag(1) {
 
-	}
-	CalTypeException(Value a) :c(a), flag(0) {
+ReturnException::ReturnException() {
+	this->data = Value();
+}
+ReturnException::ReturnException(Value x) {
+	this->data = x;
+}
+Value ReturnException::getValue() {
+	return this->data;
+}
 
-	}
-	virtual string getErrorMessage() {
-		if (flag)
-			return "TypeError: unsupported operand type(s) with \"" + c.toString() + "\" and \"" + d.toString() + "\"";
-		else
-			return "TypeError: unsupported operand type(s) with\"" + c.toString();
-	}
-};
 class UnexpectRunTimeException : public MyExpection {
 	virtual string getErrorMessage() {
 		return "RunTimeError: UnexpectRunTimeException";
@@ -57,19 +85,6 @@ class UnexpectSubscriptException : public MyExpection {
 		return "TypeError: object can't apply subscript operatonr";
 	}
 };
-class UndefinedVariableException : public MyExpection {
-private:
-	string name;
-public:
-	UndefinedVariableException(string _name)
-		:name(_name) {
-
-	}
-	virtual string getErrorMessage() {
-		return "NameError: name \"" + name + "\" is not defined";
-	}
-
-};
 class UnableCallVarException : public MyExpection {
 public:
 	UnableCallVarException(string name) {
@@ -79,20 +94,7 @@ public:
 		return "UnableCallVarException";
 	}
 };
-class RedefinedVariableException : public MyExpection {
-public:
-private:
-	string name;
-public:
-	RedefinedVariableException(string _name)
-		:name(_name) {
 
-	}
-	virtual string getErrorMessage() {
-		return "NameError: name \"" + name + "\" has been defined";
-	}
-
-};
 class BreakException : public MyExpection {
 	virtual string getErrorMessage() {
 		return "SyntaxError: 'break' outside loop";
@@ -103,141 +105,6 @@ class ContinueException : public MyExpection {
 		return "SyntaxError: 'continue' outside loop";
 	}
 };
-class ReturnException : public MyExpection {
-private:
-	Value data;
-public:
-	ReturnException() {
-		this->data = Value();
-	}
-	ReturnException(Value x) {
-		this->data = x;
-	}
-	Value getValue() {
-		return this->data;
-	}
-};
-#include<unordered_map>	
-class VariableTable {
-public:
-	string name;
-	shared_ptr<VariableTable> prev;
-	unordered_map<string, Value*> *table;
-	int isCreatePointer = 1;
-	VariableTable(string _name):name(_name) {
-		table = new unordered_map<string, Value*>();
-		prev = nullptr;
-	}
-	VariableTable(shared_ptr<VariableTable> t, string _name) :name(_name) {
-		table = new unordered_map<string, Value*>();
-		prev = t;
-	}
-	void defineVar(string name) {
-		auto t = table->find(name);
-		if (t != table->end())
-			throw RedefinedVariableException(name);
-		this->table->emplace(name, new Value());
-	}
-	Value & getVarOld(const string & name) {
-		auto t = table->find(name);
-		if (t == table->end()) {
-			if (prev == nullptr)
-				throw UndefinedVariableException(name);
-			else
-				return prev->getVar(name);
-		}
-		else {
-			return *t->second;
-		}
-	}
-	inline Value & getVar(const string & name) {
-		auto ptr = this;
-		while (ptr != nullptr) {
-			auto t = ptr->table->find(name);
-			if (t != ptr->table->end())return *t->second;
-			ptr = ptr->prev.get();
-		}
-		//return *new Value();
-		throw UndefinedVariableException(name);
-	}
-	void showAllVariable() {
-		if (this->prev != nullptr)
-			this->prev->showAllVariable();
-		cout << "At : " << this->name << endl;
-		for (auto &x : *table) {
-			cout << "    " << x.first << " : "<< (*x.second).toString() << endl;
-		}
-	}
-	~VariableTable() {
-		for (auto &x : *table)
-			delete x.second;
-	}
-};
-
-
-
-
-class Object {
-public:
-	bool mark;
-	unordered_map<string, Value*> data;
-	Object() {
-
-	}
-	Value & __getVar(string name) {
-		auto t = data.find(name);
-		if (t != data.end())return *t->second;
-		else {
-			auto pro = data.find("__proto__");
-			if (pro == data.end() || pro->second->type != Value::Type::Obj)
-				throw UndefinedVariableException("");
-			else
-				return pro->second->data.Obj->__getVar(name);
-		}
-	}
-	inline Value & getVar(string name) {
-		try {
-			return this->__getVar(name);
-		}
-		catch (UndefinedVariableException) {
-			data.emplace(name, new Value());
-			return this->__getVar(name);
-		}
-	}
-	string toString() {
-		string str = "{\n";
-		bool flag = 0;
-		for (auto &x : data) {
-			str += x.first + " : " + x.second->toString();
-			if (flag = 1) str += ",\n";
-			else { flag = 1; str += "\n"; }
-		}
-		return str + "}";
-	}
-	~Object() {
-		for (auto &x : data)
-			delete x.second;
-	}
-}; 
-shared_ptr<VariableTable> NowVarTable(new VariableTable("Global"));
-//shared_ptr<VariableTable> GlobalVarTable = NowVarTable;
-shared_ptr<VariableTable> TmpVarTable = nullptr;
-Object * TempObject = nullptr;
-class Function : public Object {
-public:
-	//bool mark;
-
-	shared_ptr<VariableTable> CallerTable;
-	shared_ptr<FuncDefNode> func;
-	Function(FuncDefNode * t)
-		:Object() {
-		CallerTable = NowVarTable;
-		func = shared_ptr<FuncDefNode>(t);
-	}
-};
-vector<Function *> FuncTable;
-vector<Object *> ObjTable;
-
 
 string itos(long long x) {
 	ostringstream os;
@@ -248,428 +115,6 @@ string dtos(double x) {
 	ostringstream os;
 	os << x;
 	return os.str();
-}
-string Value::toString()const {
-	switch (this->type) {
-	case Type::Boolean:
-		return this->data.Boolean ? "true" : "false";
-	case Type::Int:
-		return itos(this->data.Int);
-	case Type::Real:
-		return dtos(this->data.Real);
-	case Type::Str:
-		return *this->data.Str;
-	case Type::Func:
-		return "[Function]";
-	case Type::Null:
-		return "Null";
-	case Type::Obj:
-		return this->data.Obj->toString();
-	}
-	return "";
-}
-
-Value::Value() {
-
-	if (type == Type::Str)
-		delete data.Str;
-	type = Type::Null;
-}
-Value::Value(const bool &t) {
-	this->type = Type::Boolean;
-	this->data.Boolean = t;
-}
-Value::Value(const string &t) {
-	this->type = Type::Str;
-	this->data.Str = new string(t);
-}
-Value::Value(const long long &t) {
-	this->type = Type::Int;
-	this->data.Int = t;
-}
-Value::Value(const double &t) {
-	this->type = Type::Real;
-	this->data.Real = t;
-}
-
-Value::Value(const Value &t) {
-	switch (t.type) {
-	case Type::Boolean:
-		this->type = Type::Boolean;
-		this->data.Boolean = t.data.Boolean;
-	case Type::Int:
-		this->type = Type::Int;
-		this->data.Int = t.data.Int;
-		break;
-	case Type::Real:
-		this->type = Type::Real;
-		this->data.Real = t.data.Real;
-		break;
-	case Type::Str:
-		this->type = Type::Str;
-		this->data.Str = new string(*t.data.Str);
-		break;
-	case Type::Null:
-		this->type = Type::Null;
-		break;
-	case Type::Func:
-		this->type = Type::Func;
-		this->data.Func = t.data.Func;
-		break;
-	case Type::Obj:
-		this->type = Type::Obj;
-		this->data.Obj = t.data.Obj;
-	}
-}
-Value::~Value() {
-	if (type == Type::Str)
-		delete data.Str;
-}
-Value & Value::operator= (const Value & t) {
-	if (type == Type::Str)
-		delete data.Str;
-	switch (t.type) {
-	case Type::Boolean:
-		this->type = Type::Boolean;
-		this->data.Boolean = t.data.Boolean;
-	case Type::Int:
-		this->type = Type::Int;
-		this->data.Int = t.data.Int;
-		break;
-	case Type::Real:
-		this->type = Type::Real;
-		this->data.Real = t.data.Real;
-		break;
-	case Type::Str:
-		this->type = Type::Str;
-		this->data.Str = new string(*t.data.Str);
-		break;
-	case Type::Null:
-		this->type = Type::Null;
-		break;
-	case Type::Func:
-		this->type = Type::Func;
-		this->data.Func = t.data.Func;
-		break;
-	case Type::Obj:
-		this->type = Type::Obj;
-		this->data.Obj = t.data.Obj;
-	}
-	return *this;
-}
-Value::Value(Function *t) {
-	if (type == Type::Str)
-		delete data.Str;
-	this->type = Type::Func;
-	this->data.Func = t;
-}
-Value::Value(Object *t) {
-	if (type == Type::Str)
-		delete data.Str;
-	this->type = Type::Obj;
-	this->data.Obj = t;
-}
-
-bool Value::isTrue() {
-	//All Type::  //To Modify
-	if (this->type == Type::Null)
-		return false;
-	if (this->type == Type::Int && this->data.Int == 0)
-		return false;
-	if (this->type == Type::Boolean && this->data.Boolean == false)
-		return false;
-	return true;
-}
-
-
-Value Value::operator++ () {
-	if (this->type == Type::Boolean) {
-		this->type = Type::Int;
-		this->data.Int = this->data.Boolean + 1;
-		return Value();
-	}
-	if (this->type == Type::Int) {
-		this->data.Int++;
-		return Value();
-	}
-	if (this->type == Type::Real) {
-		this->data.Real++;
-		return Value();
-	}
-	throw CalTypeException(*this);
-}
-Value Value::operator-- () {
-	if (this->type == Type::Boolean) {
-		this->type = Type::Int;
-		this->data.Int = this->data.Boolean - 1;
-		return Value();
-	}
-	if (this->type == Type::Int) {
-		this->data.Int--;
-		return *this;
-	}
-	if (this->type == Type::Real) {
-		this->data.Real--;
-		return *this;
-	}
-	throw CalTypeException(*this);
-}
-Value Value::operator- () {
-	if (this->type == Type::Boolean) {
-		this->type = Type::Int;
-		this->data.Int = -this->data.Boolean;
-		return Value();
-	}
-	if (this->type == Type::Int)
-		return Value(-this->data.Int);
-	if (this->type == Type::Real)
-		return Value(-this->data.Real);
-	throw CalTypeException(*this);
-}
-string btos(bool a) {
-	return a == true ? "true" : "false";
-}
-Value Value::operator+ (const Value &t) {
-
-	//For Str
-	if (this->type == Type::Str && t.type == Type::Boolean)
-		return Value(*this->data.Str + btos(t.data.Boolean));
-	if (this->type == Type::Boolean && t.type == Type::Str)
-		return Value(btos(this->data.Boolean) + *t.data.Str);
-	if (this->type == Type::Str && t.type == Type::Str)
-		return Value(*this->data.Str + *t.data.Str);
-	if (this->type == Type::Int && t.type == Type::Str)
-		return Value(itos(this->data.Int) + *t.data.Str);
-	if (this->type == Type::Real && t.type == Type::Str)
-		return Value(dtos(this->data.Real) + *t.data.Str);
-	if (this->type == Type::Str && t.type == Type::Int)
-		return Value( *this->data.Str + itos(t.data.Int) );
-	if (this->type == Type::Str && t.type == Type::Real)
-		return Value( *this->data.Str + dtos(t.data.Real) );
-	//For Num
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int + t.data.Int);
-	if (this->type == Type::Real && t.type == Type::Int)
-		return Value(this->data.Real + t.data.Int);
-	if (this->type == Type::Real && t.type == Type::Real)
-		return Value(this->data.Real + t.data.Real);
-	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value(this->data.Int + t.data.Real);
-	if (this->type == Type::Real && t.type == Type::Boolean)
-		return Value(this->data.Real + t.data.Boolean);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int + t.data.Boolean);
-	if (this->type == Type::Boolean && t.type == Type::Real)
-		return Value(this->data.Boolean + t.data.Real);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean + t.data.Int);
-	throw CalTypeException(*this, t);
-}
-Value Value::operator- (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int - t.data.Int);
-	if (this->type == Type::Real && t.type == Type::Int)
-		return Value(this->data.Real - t.data.Int);
-	if (this->type == Type::Real && t.type == Type::Real)
-		return Value(this->data.Real - t.data.Real);
-	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value(this->data.Int - t.data.Real);
-	if (this->type == Type::Real && t.type == Type::Boolean)
-		return Value(this->data.Real - t.data.Boolean);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int - t.data.Boolean);
-	if (this->type == Type::Boolean && t.type == Type::Real)
-		return Value(this->data.Boolean - t.data.Real);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean - t.data.Int);
-	throw CalTypeException(*this, t);
-}
-Value Value::operator* (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int * t.data.Int);
-	if (this->type == Type::Real && t.type == Type::Int)
-		return Value(this->data.Real * t.data.Int);
-	if (this->type == Type::Real && t.type == Type::Real)
-		return Value(this->data.Real * t.data.Real);
-	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value(this->data.Int * t.data.Real);
-	if (this->type == Type::Real && t.type == Type::Boolean)
-		return Value(this->data.Real * t.data.Boolean);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int * t.data.Boolean);
-	if (this->type == Type::Boolean && t.type == Type::Real)
-		return Value(this->data.Boolean * t.data.Real);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean * t.data.Int);
-	throw CalTypeException(*this, t);
-}
-Value Value::operator/ (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int / t.data.Int);
-	if (this->type == Type::Real && t.type == Type::Int)
-		return Value(this->data.Real / t.data.Int);
-	if (this->type == Type::Real && t.type == Type::Real)
-		return Value(this->data.Real / t.data.Real);
-	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value(this->data.Int / t.data.Real);
-	if (this->type == Type::Real && t.type == Type::Boolean)
-		return Value(this->data.Real / t.data.Boolean);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int / t.data.Boolean);
-	if (this->type == Type::Boolean && t.type == Type::Real)
-		return Value(this->data.Boolean / t.data.Real);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean / t.data.Int);
-	throw CalTypeException(*this, t);
-}
-Value Value::operator% (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int % t.data.Int);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int % t.data.Boolean);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean % t.data.Int);
-	throw CalTypeException(*this, t);
-}
-
-Value Value::operator&& (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int && this->data.Int != 0 && t.data.Int != 0
-		&& this->type == Type::Boolean && t.type == Type::Int && this->data.Boolean != 0 && t.data.Int != 0
-		&& this->type == Type::Int && t.type == Type::Boolean && this->data.Int != 0 && t.data.Boolean != 0)
-		return Value(true);
-	return Value(false);
-}
-Value Value::operator|| (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int && this->data.Int == 0 && t.data.Int == 0
-		|| this->type == Type::Boolean && t.type == Type::Int && this->data.Boolean == 0 && t.data.Int == 0
-		|| this->type == Type::Int && t.type == Type::Boolean && this->data.Int == 0 && t.data.Boolean == 0)
-		return Value(false);
-	return Value(true);
-}
-Value Value::operator! () {
-	if (this->type == Type::Int)
-		return Value(!this->data.Int);
-	if (this->type == Type::Boolean)
-		return Value(!this->data.Boolean);
-	throw CalTypeException(*this);
-}
-
-Value Value::operator~ () {
-	if (this->type == Type::Int)
-		return Value(~this->data.Int);
-	if (this->type == Type::Boolean)
-		return Value((long long)~this->data.Boolean);
-	throw CalTypeException(*this);
-}
-Value Value::operator& (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int & t.data.Int);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int & t.data.Boolean);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean & t.data.Int);
-	throw CalTypeException(*this, t);
-}
-Value Value::operator| (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value(this->data.Int | t.data.Int);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int | t.data.Boolean);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean | t.data.Int);
-	throw CalTypeException(*this, t);
-}
-
-Value Value::operator!= (const Value &t) {
-	return Value(!this->operator==(t).data.Int);
-}
-Value Value::operator== (const Value &t) {
-	if (this->type != t.type)
-		return Value(false);
-	if (this->type == Type::Int && this->data.Int == t.data.Int
-		|| this->type == Type::Real && this->data.Real == t.data.Real
-		|| this->type == Type::Str && *this->data.Str == *t.data.Str
-		|| this->type == Type::Func && this->data.Func == t.data.Func
-		|| this->type == Type::Func && this->data.Obj == t.data.Obj
-		)
-		return Value(true);
-	return Value(false);
-}
-Value Value::operator> (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value((this->data.Int > t.data.Int));
-	if (this->type == Type::Real && t.type == Type::Int)
-		return Value((this->data.Real > t.data.Int));
-	if (this->type == Type::Real && t.type == Type::Real)
-		return Value((this->data.Real > t.data.Real));
-	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value((this->data.Int > t.data.Real));
-	if (this->type == Type::Real && t.type == Type::Boolean)
-		return Value(this->data.Real > t.data.Boolean);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int > t.data.Boolean);
-	if (this->type == Type::Boolean && t.type == Type::Real)
-		return Value(this->data.Boolean > t.data.Real);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean > t.data.Int);
-	throw CalTypeException(*this, t);
-}
-Value Value::operator< (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value((this->data.Int < t.data.Int));
-	if (this->type == Type::Real && t.type == Type::Int)
-		return Value((this->data.Real < t.data.Int));
-	if (this->type == Type::Real && t.type == Type::Real)
-		return Value((this->data.Real < t.data.Real));
-	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value((this->data.Int < t.data.Real));
-	if (this->type == Type::Real && t.type == Type::Boolean)
-		return Value(this->data.Real < t.data.Boolean);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int < t.data.Boolean);
-	if (this->type == Type::Boolean && t.type == Type::Real)
-		return Value(this->data.Boolean < t.data.Real);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean < t.data.Int);
-	throw CalTypeException(*this, t);
-}
-Value Value::operator>= (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value((this->data.Int >= t.data.Int));
-	if (this->type == Type::Real && t.type == Type::Int)
-		return Value((this->data.Real >= t.data.Int));
-	if (this->type == Type::Real && t.type == Type::Real)
-		return Value((this->data.Real >= t.data.Real));
-	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value((this->data.Int >= t.data.Real));
-	if (this->type == Type::Real && t.type == Type::Boolean)
-		return Value(this->data.Real >= t.data.Boolean);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int >= t.data.Boolean);
-	if (this->type == Type::Boolean && t.type == Type::Real)
-		return Value(this->data.Boolean >= t.data.Real);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean >= t.data.Int);
-	throw CalTypeException(*this, t);
-}
-Value Value::operator<= (const Value &t) {
-	if (this->type == Type::Int && t.type == Type::Int)
-		return Value((this->data.Int <= t.data.Int));
-	if (this->type == Type::Real && t.type == Type::Int)
-		return Value((this->data.Real <= t.data.Int));
-	if (this->type == Type::Real && t.type == Type::Real)
-		return Value((this->data.Real <= t.data.Real));
-	if (this->type == Type::Int  && t.type == Type::Real)
-		return Value((this->data.Int <= t.data.Real));
-	if (this->type == Type::Real && t.type == Type::Boolean)
-		return Value(this->data.Real <= t.data.Boolean);
-	if (this->type == Type::Int  && t.type == Type::Boolean)
-		return Value(this->data.Int <= t.data.Boolean);
-	if (this->type == Type::Boolean && t.type == Type::Real)
-		return Value(this->data.Boolean <= t.data.Real);
-	if (this->type == Type::Boolean  && t.type == Type::Int)
-		return Value(this->data.Boolean <= t.data.Int);
-	throw CalTypeException(*this, t);
 }
 Value StmtsNode::eval() {
 	left->eval();
@@ -694,7 +139,7 @@ Value MulNode::eval() {
 Value DivNode::eval() {
 	Value t1 = left->eval();
 	Value t2 = right->eval();
-	return t1 - t2;
+	return t1 / t2;
 }
 Value ModNode::eval() {
 	Value t1 = left->eval();
@@ -765,7 +210,7 @@ Value ForeachNode::eval() {
 	auto datavar = dynamic_pointer_cast<ILvalue>(this->mid)->get();
 	if (datavar.type == Value::Type::Obj) {
 		for (auto & x : datavar.data.Obj->data) {
-			NowVarTable->getVar(varname) = x.first;
+			NowVarTable->getVar(varname) = DecodeString( x.first );
 			try {
 				right->eval();
 			}
@@ -871,7 +316,6 @@ Value BorNode::eval() {
 Value IDNode::eval() {
 	return NowVarTable->getVar(this->value);
 }
-extern ostream & operator<< (ostream &, const Value &);
 
 Value AssignNode::eval() {
 	auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
@@ -885,9 +329,8 @@ Value FuncDefNode::eval() {
 	FuncTable.emplace_back(new Function(new FuncDefNode(this->left, this->right)));
 	return Value(*(FuncTable.end() - 1));
 }
-vector<string> FuncCallTmp;
+vector<int> FuncCallTmp;
 int FuncCallTmpNow;
-shared_ptr<VariableTable> caller;
 Value FuncCallNode::eval() {
 	//var check
 	auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
@@ -906,7 +349,7 @@ Value FuncCallNode::eval() {
 
 	//Argus
 	//null
-	FuncCallTmp = vector<string>(); FuncCallTmpNow = 0;
+	FuncCallTmp = vector<int>(); FuncCallTmpNow = 0;
 	
 	if (typeid(*func->left) == typeid(NullNode)) {
 		//
@@ -989,67 +432,6 @@ void SysFuncNode::visit(int x) {
 Value SysFuncNode::eval() {
 	return func();
 }
-
-void addSysFunc(string name, vector<string> args, SysFunc func) {
-	//define var
-	/*auto name = getNameInt(nameO);
-	vector<int> args;
-	for (auto &t : argsO) {
-		args.emplace_back(getNameInt(t));
-	}*/
-	NowVarTable->defineVar(name);
-	shared_ptr<Node> arugs;
-	//null;
-	if (args.size() == 0)arugs = shared_ptr<Node>(new NullNode());
-	//one
-	else if (args.size() == 1) arugs = shared_ptr<Node>(new IDNode(args[0]));
-	//more
-	else {
-		arugs = shared_ptr<Node>(new ArguDefNode(
-			shared_ptr<Node>(new IDNode(args[0])),
-			shared_ptr<Node>(new IDNode(args[1]))));
-		for (int i = 2; i <= args.size() - 1; i++) {
-			arugs = shared_ptr<Node>(new ArguDefNode(arugs, shared_ptr<Node>(new IDNode(args[i]))));
-		}
-	}
-	NowVarTable->getVar(name).type = Value::Type::Func;
-	NowVarTable->getVar(name).data.Func = new Function(new FuncDefNode(arugs, shared_ptr<Node>(new SysFuncNode(func))));
-}
-void initSysFunc() {
-	addSysFunc("print", {"x"}, []() {
-		// Value print(x)
-		cout << NowVarTable->getVar("x");
-		throw ReturnException();
-		return Value();
-	});
-	addSysFunc("readint", {}, []() {
-		long long x;
-		cin >> x;
-		throw ReturnException(Value((x)));
-		return Value();
-	});
-	addSysFunc("readstr", {}, []() {
-		string x;
-		cin >> x;
-		throw ReturnException(Value(x));
-		return Value();
-	});
-	addSysFunc("readreal", {}, []() {
-		double x;
-		cin >> x;
-		throw ReturnException(Value(x));
-		return Value();
-	});
-	addSysFunc("showAllVars", {}, []() {
-		caller->showAllVariable();
-		return Value();
-	});
-	addSysFunc("exit", {}, []() {
-		exit(0);
-		return Value();
-	});
-}
-
 Value & ILvalue::get() {
 	return *new Value();
 }
@@ -1068,10 +450,10 @@ Value & SonNode::get() {
 		//subscript
 		auto ret = this->right->eval();
 		if (ret.type == Value::Type::Int) {
-			return var.type == Value::Type::Obj?var.data.Obj->getVar(itos(ret.data.Int)): var.data.Func->getVar(itos(ret.data.Int));
+			return var.type == Value::Type::Obj?var.data.Obj->getVar(-(int)ret.data.Int): var.data.Func->getVar(-(int)ret.data.Int);
 		}
 		else if (ret.type == Value::Type::Str) {
-			return var.type == Value::Type::Obj ? var.data.Obj->getVar(*ret.data.Str) : var.data.Func->getVar(itos(ret.data.Int));
+			return var.type == Value::Type::Obj ? var.data.Obj->getVar(EncodeString(*ret.data.Str)) : var.data.Func->getVar(-(int)ret.data.Int);
 		}
 		else {
 			throw UnexpectSubscriptException();
@@ -1093,7 +475,7 @@ Value & IDNode::get() {
 }
 
 string IDNode::getName() {
-	return this->value;
+	return DecodeString(this->value);
 }
 Value SonNode::eval() {
 	return this->get();
@@ -1118,13 +500,13 @@ Value ArrayDefNode::eval() {
 Value ArrayDefGroupNode::eval() {
 	if (dynamic_pointer_cast<ArrayDefGroupNode>(this->left) == nullptr) {
 		++TempArrayIndex;
-		TempObject->getVar(itos(TempArrayIndex)) = this->left->eval();
+		TempObject->getVar(-TempArrayIndex) = this->left->eval();
 	}
 	else {
 		this->left->eval();
 	}
 	++TempArrayIndex;
-	TempObject->getVar(itos(TempArrayIndex)) = this->right->eval();
+	TempObject->getVar(-TempArrayIndex) = this->right->eval();
 	return Value();
 }
 
@@ -1163,8 +545,6 @@ Value VarDeclrsNode::eval() {
 Value SimpleNode::eval() {
 	return this->son->eval();
 }
-
-
 Value NewFuncCallNode::eval() {
 	//var check
 
@@ -1185,7 +565,7 @@ Value NewFuncCallNode::eval() {
 
 	//Argus
 	//null
-	FuncCallTmp = vector<string>(); FuncCallTmpNow = 0;
+	FuncCallTmp = vector<int>(); FuncCallTmpNow = 0;
 
 	auto funcPtr = func.data.Func->func;
 	if (typeid(*funcPtr->left) == typeid(NullNode)) {
@@ -1214,16 +594,16 @@ Value NewFuncCallNode::eval() {
 	caller = NowVarTable;
 	auto SavedVarTable = NowVarTable;
 	NowVarTable = TmpVarTable;
-	NowVarTable->defineVar("this");
-	NowVarTable->getVar("this")= new Object();
-	auto & tmpThis = NowVarTable->getVar("this");
-	tmpThis.data.Obj->getVar("__proto__") = func.data.Func->getVar("prototype");
-	tmpThis.data.Obj->getVar("constructor") = func.data.Func;
+	NowVarTable->defineVar(Sthis);
+	NowVarTable->getVar(Sthis)= new Object();
+	auto & tmpThis = NowVarTable->getVar(Sthis);
+	tmpThis.data.Obj->getVar(S__proto__) = func.data.Func->getVar(Sprototype);
+	tmpThis.data.Obj->getVar(Sconstructor) = func.data.Func;
 	try {
 		funcPtr->right->eval();
 	}
 	catch (ReturnException e) {
-		auto ttmp =  Value(NowVarTable->getVar("this"));
+		auto ttmp =  Value(NowVarTable->getVar(Sthis));
 		auto tmp = NowVarTable;
 		NowVarTable = SavedVarTable;
 		//delete tmp;
@@ -1231,7 +611,7 @@ Value NewFuncCallNode::eval() {
 		return ttmp;
 	}
 	//return 
-	auto ttmp = Value(NowVarTable->getVar("this"));
+	auto ttmp = Value(NowVarTable->getVar(Sthis));
 	auto tmp = NowVarTable;
 	NowVarTable = SavedVarTable;
 	//delete tmp;

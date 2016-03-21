@@ -42,6 +42,7 @@ NULL null
 TRUE true
 FALSE false
 OF of
+IMPORT import
 
 
 #control symbol 
@@ -82,8 +83,8 @@ BAND \&
 
 #value
 
-INT -?(NNN)+
-REAL -?(NNN)+.(NNN)+
+INT (NNN)+
+REAL (NNN)+.(NNN)+
 
 STRING (\"|\')\a*(\"|\')
 

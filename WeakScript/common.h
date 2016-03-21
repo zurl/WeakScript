@@ -1,7 +1,6 @@
-#pragma once
-
 #ifndef COMMMON_H
 #define COMMMON_H
+
 #include<string>
 #include<iostream>
 #include<fstream>
@@ -13,8 +12,12 @@
 #include<sstream>
 #include<set>
 #include<map>
+#include<functional>
+#include<unordered_map>
 #include "WeakScriptLex.h"
 using namespace std;
+
+
 
 class MyExpection {
 	//Abs Class

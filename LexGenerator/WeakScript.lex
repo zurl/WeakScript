@@ -83,8 +83,8 @@ BAND \&
 
 #value
 
-INT -?(NNN)+
-REAL -?(NNN)+.(NNN)+
+INT (NNN)+
+REAL (NNN)+.(NNN)+
 
 STRING (\"|\')\a*(\"|\')
 

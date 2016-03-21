@@ -1,4 +1,9 @@
 #include "common.h"
+#ifndef LEX_H
+#define LEX_H
+
+using namespace std;
+
 class Lex;
 class Reg{
 public:
@@ -87,3 +92,4 @@ private:
 public:
 	int AcceptId(string id);
 };
+#endif

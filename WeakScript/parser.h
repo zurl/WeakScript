@@ -1,66 +1,8 @@
-#pragma once
-#include "common.h"
-#include "Lex.h"
+#include "eval.h"
+
 #ifndef PARSER_H
 #define PARSER_H
-class Function;
-class Object;
-class Value {
 
-public:
-	Value();
-	Value(const bool &t);
-	Value(const string &t);
-	Value(const long long &t);
-	Value(const double &t);
-	Value(const Value &t);
-	Value(Function *t);
-	Value(Object *t);
-	~Value();
-
-	Value & operator= (const Value & t);
-
-	Value operator+ (const Value & t);
-	Value operator++ ();
-	Value operator-- ();
-
-	Value operator- (const Value & t);
-	Value operator* (const Value & t);
-	Value operator/ (const Value & t);
-	Value operator% (const Value & t);
-
-	Value operator&& (const Value & t);
-	Value operator|| (const Value & t);
-	Value operator! ();
-
-	Value operator- ();
-	Value operator~ ();
-	Value operator& (const Value & t);
-	Value operator| (const Value & t);
-
-
-	Value operator!= (const Value & t);
-	Value operator== (const Value & t);
-	Value operator> (const Value & t);
-	Value operator< (const Value & t);
-	Value operator>= (const Value & t);
-	Value operator<= (const Value & t);
-
-	bool isTrue();
-	string toString()const;
-	enum class Type {
-		Null, Int, Real, Str, Obj ,Func,Boolean
-	};
-	Type type;
-	union {
-		bool Boolean;
-		long long Int;
-		double Real;
-		string * Str;
-		Function * Func;
-		Object * Obj;
-	}data;
-};
 class Node {
 public:
 	virtual void visit(int x) = 0;
@@ -74,7 +16,6 @@ public:
 	void visitson(int x);
 	virtual void del();
 };
-typedef Value(*SysFunc)();
 class SysFuncNode : public UnitNode {
 public:
 	SysFunc func;
@@ -134,14 +75,14 @@ public:
 };
 class VarDeclrAssignNode : public UnaryNode {
 public:
-	string value;
+	int value;
 	VarDeclrAssignNode(string _value, shared_ptr<Node> a);
 	virtual void visit(int x);
 	virtual Value eval();
 };
 class VarDeclrNode : public UnitNode {
 public:
-	string value;
+	int value;
 	VarDeclrNode(string _value);
 	virtual void visit(int x);
 	virtual Value eval();
@@ -316,7 +257,7 @@ public:
 };
 class IDNode : public UnitNode , public ILvalue {
 public:
-	string value;
+	int value;
 	IDNode(string _value);
 	virtual void visit(int x);
 	virtual Value eval();
