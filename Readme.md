@@ -38,33 +38,3 @@ A program for finding prime numbers.
 	system.prime();
 }  
 ```
-
-4.future
-this seq
-environment
-str endl
-
-
-5.Grammer Reference  
-(like a subset of JavaScript)  
-  
-Data Type:  
-WeakScirpt has six Data Types:  
-Null , Integer , Real , String , Function Ref , Object Ref  
-Operator:  
-(Priority is descending)  
-* Unary - ! ~  
-* * / %  
-* + -  
-* >= <= > < == !=  
-* &&  
-* ||  
-* &  
-* |  
-* =  
-Control:  
-for(stmt;expr;stmt)stmt  
-while(expr)stmt  
-if(expr)stmt   
-if(expr)stmt else stmt  
-  
