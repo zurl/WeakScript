@@ -4,19 +4,16 @@
 #include "parser.h"
 #include<algorithm>
 
-#define d
-#ifdef d
-extern Lex lex;
-#else
-extern Lex lex("test.ws");
-#endif
 
 extern shared_ptr<Node> root;
 extern bool parseStmt();
 extern void initSysFunc();
 
+Lex * lex;
+
+
+
 bool FileInput() {
-	initSysFunc();
 	if (parseStmt()) {
 		//root->visit(0);
 		root->eval();
@@ -32,10 +29,10 @@ bool FileInput() {
 extern ostream & operator<< (ostream &, const Value &);
 
 
-string info = "WeakScript 0.5.0 stable on win32\nCopyright 2015-2016 zcy. All Rights Reserved\nThis project is under the MIT license: http://www.opensource.org/licenses/mit-license.php\n";
+string info = "WeakScript 0.6.0 stable on win32\nCopyright 2015-2016 zcy. All Rights Reserved\nThis project is under the MIT license: http://www.opensource.org/licenses/mit-license.php\n";
 bool InterInput() {
 	string code;
-	initSysFunc(); 
+	
 	//lex = Lex();
 	cout << info;
 	while (1) {
@@ -56,7 +53,7 @@ bool InterInput() {
 		}
 		else {
 			cout << "SyntaxError" << endl;
-			lex.reset();
+			lex->reset();
 			//return 0;
 		}
 		//saved_root = root;
@@ -64,12 +61,38 @@ bool InterInput() {
 }
 
 extern void initConstString();
-int main() {  
+extern shared_ptr<VariableTable> NowVarTable;
+void networkinit(char *begin) {
+	//space;
+	NowVarTable->defineVar(SHttpRequest);
+	string text = string(begin);
+	lex = new Lex(0,text);
+	if (parseStmt()) {
+
+		root->eval();
+		delete lex;
+	}
+	else {
+		cout << "fuck" << endl;
+	}
+}
+
+int main(int argc, char *argv[]) {
 	initConstString();
-#ifndef d
-	FileInput();
-#else
-	InterInput();
-#endif
+	initSysFunc();
+	if (argc == 1) {
+		lex = new Lex();
+		InterInput();
+	}
+	else {
+		if (argv[1][1] == 'f') {
+			lex = new Lex(string(argv[2]));
+		}
+		else if (argv[1][1] == 'n') {
+			networkinit(argv[3]);
+			lex = new Lex(string(argv[2]));
+		}
+		FileInput();
+	}
 	return 0;
 }

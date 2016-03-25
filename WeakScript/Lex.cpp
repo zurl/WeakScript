@@ -143,7 +143,7 @@ void Lex::reset() {
 	tokenList.emplace_front(-1);
 	now = tokenList.begin();
 }
-bool Lex::loadToken(){
+bool Lex::loadToken() {
 	string t; Token tk;
 	if (display == 0) {
 		if (std::getline(fin, t)) {
@@ -155,7 +155,18 @@ bool Lex::loadToken(){
 		else {
 			return 0;
 		}
-		
+
+	}
+	else if (display == 10) {
+		if (std::getline(sin, t)) {
+			t += '\n';
+			line++;
+			if (!reg.accept(t, *this))return 0;
+			return 1;
+		}
+		else {
+			return 0;
+		}
 	}
 	else {
 		if (std::getline(cin, t)) {
@@ -203,6 +214,13 @@ void Lex::setNowPos(list<Token>::iterator a){
 }
 Lex::Lex(string filename)
 	:fin(filename), display(0)
+{
+	reg.loadDFA("WeakScript.dfa");
+	tokenList.emplace_front(-1);
+	now = tokenList.begin();
+}
+Lex::Lex(int a,string x)
+	: display(10),sin(x)
 {
 	reg.loadDFA("WeakScript.dfa");
 	tokenList.emplace_front(-1);

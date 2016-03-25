@@ -27,7 +27,7 @@ public:
 Value::Value() {
 
 	if (type == Type::Str)
-		delete data.Str;
+		{delete data.Str;type = Type::Null;}
 	type = Type::Null;
 }
 Value::Value(const bool &t) {
@@ -97,12 +97,13 @@ Value::Value(const Value &t) {
 	}
 }
 Value::~Value() {
-	if (type == Type::Str)
-		delete data.Str;
+	if (type == Type::Str) {
+		{delete data.Str;type = Type::Null;}
+	}
 }
 Value & Value::operator= (const Value & t) {
 	if (type == Type::Str)
-		delete data.Str;
+		{delete data.Str;type = Type::Null;}
 	switch (t.type) {
 	case Type::Boolean:
 		this->type = Type::Boolean;
@@ -134,13 +135,13 @@ Value & Value::operator= (const Value & t) {
 }
 Value::Value(Function *t) {
 	if (type == Type::Str)
-		delete data.Str;
+		{delete data.Str;type = Type::Null;}
 	this->type = Type::Func;
 	this->data.Func = t;
 }
 Value::Value(Object *t) {
 	if (type == Type::Str)
-		delete data.Str;
+		{delete data.Str;type = Type::Null;}
 	this->type = Type::Obj;
 	this->data.Obj = t;
 }

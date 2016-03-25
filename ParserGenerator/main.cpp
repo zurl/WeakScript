@@ -158,9 +158,9 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 				newVarFlag2 = 1;
 				keystr2 = "auto ";
 			}
-			app(body, keystr2 + "SavedLexPos" + itos(deep) + " = lex.getNowPos(); ", deep);
+			app(body, keystr2 + "SavedLexPos" + itos(deep) + " = lex->getNowPos(); ", deep);
 			app(body, keystr2 + "SavedRoot" + itos(deep) + " = root;", deep);
-			app(body, keystr1 + "ReadinToken" + itos(deep) + " = lex.readNextToken();", deep);
+			app(body, keystr1 + "ReadinToken" + itos(deep) + " = lex->readNextToken();", deep);
 			app(body, "if (ReadinToken" + itos(deep) + ".id == LEX_" + getBackStr(name) + ") {", deep);
 
 			dfs(k->t, rhashtable, datas, e, accept, deep + 1, isCir);
@@ -176,11 +176,11 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 			}
 			//app(body, "}", deep);
 			//app(body, "else{", deep);
-			//app(body, "lex.setNowPos(SavedLexPos" + itos(deep) + ");", deep + 1);
+			//app(body, "lex->setNowPos(SavedLexPos" + itos(deep) + ");", deep + 1);
 			//app(body, "}", deep);
 			app(body, "}", deep);
 			//app(body, "else{", deep);
-			app(body, "lex.setNowPos(SavedLexPos" + itos(deep) + ");", deep);
+			app(body, "lex->setNowPos(SavedLexPos" + itos(deep) + ");", deep);
 			app(body, "root = SavedRoot" + itos(deep) + ";", deep);
 			//app(body, "}", deep);
 		}
@@ -191,7 +191,7 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 				keystr2 = "auto ";
 			}
 			//terminal
-			app(body, keystr2 + "SavedLexPos" + itos(deep) + " = lex.getNowPos(); ", deep);
+			app(body, keystr2 + "SavedLexPos" + itos(deep) + " = lex->getNowPos(); ", deep);
 			app(body, keystr2 + "SavedRoot" + itos(deep) + " = root;", deep);
 			app(body, "if (parse" + getBackStr(name) + "()) {", deep);
 
@@ -214,7 +214,7 @@ void dfs(int x, map<int, string> rhashtable,vector<vector<string>> datas,  edge 
 			//app(body, "}", deep);
 
 			app(body, "refresh();", deep );
-			app(body, "lex.setNowPos(SavedLexPos" + itos(deep) + ");", deep);
+			app(body, "lex->setNowPos(SavedLexPos" + itos(deep) + ");", deep);
 			app(body, "root = SavedRoot" + itos(deep) + ";", deep );
 			//app(body, "}", deep);
 		}

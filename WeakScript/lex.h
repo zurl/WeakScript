@@ -69,13 +69,14 @@ class Lex{
 private:
 	Reg reg;
 	ifstream fin;
+	istringstream sin;
 	int line = 0;
 	list<Token> tokenList;
 	list<Token>::iterator now = tokenList.begin();
 	bool loadToken();
 public:
 	void reset();
-	bool display;
+	int display;
 	void acceptToken(int id, string &name);
 	Token readNextToken();
 	//Token readInNextToken();
@@ -83,6 +84,7 @@ public:
 	void setNowPos(list<Token>::iterator a);
 	Lex(string filename);
 	Lex();
+	Lex(int a, string x);
 };
 
 class SymbolTable{

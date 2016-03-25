@@ -43,7 +43,7 @@ int EncodeString(string x) {
 }
 
 string DecodeString(int x) {
-	return EncodeHashTable.find(x)->second;
+return EncodeHashTable.find(x)->second;
 }
 
 string MyExpection::getErrorMessage() { return ""; }
@@ -483,21 +483,40 @@ Value SonNode::eval() {
 }
 
 Value ObjDefNode::eval() {
+	auto SavedTempObject = TempObject;
 	TempObject = new Object();
 	this->son->eval();
 	ObjTable.emplace_back(TempObject);
-	return Value(TempObject);
+	auto ret = Value(TempObject);
+	TempObject = SavedTempObject;
+	return ret;
 }
 int TempArrayIndex;
 Value ArrayDefNode::eval() {
+	auto SavedTempObject = TempObject;
 	TempObject = new Object();
+	auto SavedArrayIndex = TempArrayIndex;
 	TempArrayIndex = -1;
-	this->son->eval();
-	ObjTable.emplace_back(TempObject);
-	return Value(TempObject);
+	if (dynamic_pointer_cast<ArrayDefGroupNode>(this->son) != nullptr) {
+		this->son->eval();
+	}
+	else if (dynamic_pointer_cast<NullNode>(this->son) != nullptr){
+	
+	}
+	else {
+		++TempArrayIndex;
+		TempObject->getVar(-TempArrayIndex) = this->son->eval();
+	}
+ 	//ObjTable.emplace_back(TempObject);
+	auto ret = TempObject;
+	TempObject = SavedTempObject;
+	TempArrayIndex = SavedArrayIndex;
+	return Value(ret);
 }
 
 Value ArrayDefGroupNode::eval() {
+
+
 	if (dynamic_pointer_cast<ArrayDefGroupNode>(this->left) == nullptr) {
 		++TempArrayIndex;
 		TempObject->getVar(-TempArrayIndex) = this->left->eval();

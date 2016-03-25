@@ -6,6 +6,7 @@ int S__proto__;
 int SSystem;
 int Sconstructor;
 int Sx;
+int SHttpRequest;
 
 extern int EncodeString(string);
 void initConstString() {
@@ -15,4 +16,5 @@ void initConstString() {
 	Sconstructor = EncodeString("constructor");
 	SSystem = EncodeString("System");
 	Sx = EncodeString("x");
+	SHttpRequest = EncodeString("HttpRequest");
 }

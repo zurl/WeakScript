@@ -14,7 +14,7 @@ This is a project contains WeakScirpt's Interpreter and its util
 * `OOP`
 * (Mark-Sweep GC)  
   
-3. Expample 
+3. Expample
 A program for finding prime numbers.
 ```JavaScript
 {  

@@ -6,6 +6,9 @@ class UndefinedVariableException : public MyExpection {
 private:
 	string name;
 public:
+	UndefinedVariableException() {
+		name = "";
+	}
 	UndefinedVariableException(int _name)
 		:name(DecodeString(_name)) {
 
@@ -40,7 +43,7 @@ Value & Object::__getVar(int name) {
 	else {
 		auto pro = data.find(S__proto__);
 		if (pro == data.end() || pro->second->type != Value::Type::Obj)
-			throw UndefinedVariableException(name);
+			throw UndefinedVariableException();
 		else
 			return pro->second->data.Obj->__getVar(name);
 	}
@@ -55,14 +58,49 @@ Value & Object::getVar(int name) {
 	}
 }
 string Object::toString() {
-	string str = "{\n";
-	bool flag = 0;
-	for (auto &x : data) {
-		str += DecodeString(x.first) + " : " + x.second->toString();
-		if (flag = 1) str += ",\n";
-		else { flag = 1; str += "\n"; }
+
+
+	if (data.find(0) != data.end()) {
+		//Array
+		string str = "[\n";
+		bool flag = 0;
+
+		int min = 1;
+		for (auto &x : data) {
+			if (x.first <= min) min = x.first;
+		}
+
+		for (int i = 0; i >= min; i--) {
+			if (flag == 0) {
+				flag = 1;
+			}
+			else {
+				str += ",";
+			}
+			auto temp = data.find(i);
+			if ( temp != data.end()) {
+				str += temp->second->toString();
+			}
+			else {
+				str += "Null";
+			}
+			
+		}
+		return str + "]";
 	}
-	return str + "}";
+	else {
+		string str = "{\n";
+		bool flag = 0;
+
+		for (auto &x : data) {
+			if (x.first <= 0) continue;
+			str += DecodeString(x.first) + " : " + x.second->toString();
+			if (flag = 1) str += ",\n";
+			else { flag = 1; str += "\n"; }
+		}
+		return str + "}";
+	}
+
 }
 Object::~Object() {
 	for (auto &x : data)

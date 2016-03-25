@@ -25,4 +25,12 @@ public:
 	virtual string getErrorMessage();
 };
 
+extern int Sprototype;
+extern int Sthis;
+extern int S__proto__;
+extern int SSystem;
+extern int Sconstructor;
+extern int Sx;
+extern int SHttpRequest;
+
 #endif
