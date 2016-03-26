@@ -506,7 +506,7 @@ bool parseRvalue();
 bool parseSonExpr();
 bool parseArrayDefGroup();
 bool parseArrayDef();
-
+bool parseStrBase();
 bool parseStmts() {
 	auto SavedLexPos1 = lex->getNowPos();
 	auto SavedRoot1 = root;
@@ -803,6 +803,29 @@ bool parseJSON() {
 	auto SavedLexPos1 = lex->getNowPos();
 	auto SavedRoot1 = root;
 	if (parseIDBase()) {
+		auto SavedLexPos2 = lex->getNowPos();
+		auto SavedRoot2 = root;
+		auto ReadinToken2 = lex->readNextToken();
+		if (ReadinToken2.id == LEX_COL) {
+			auto SavedLexPos3 = lex->getNowPos();
+			auto SavedRoot3 = root;
+			if (parseRvalue()) {
+				root = shared_ptr<Node>(new JsonNode(SavedRoot2, root));
+				return 1;
+			}
+			refresh();
+			lex->setNowPos(SavedLexPos3);
+			root = SavedRoot3;
+		}
+		lex->setNowPos(SavedLexPos2);
+		root = SavedRoot2;
+	}
+	refresh();
+	lex->setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	SavedLexPos1 = lex->getNowPos();
+	SavedRoot1 = root;
+	if (parseStrBase()) {
 		auto SavedLexPos2 = lex->getNowPos();
 		auto SavedRoot2 = root;
 		auto ReadinToken2 = lex->readNextToken();
@@ -1573,6 +1596,19 @@ bool parseIDBase() {
 	root = SavedRoot1;
 	return 0;
 }
+bool parseStrBase() {
+	auto SavedLexPos1 = lex->getNowPos();
+	auto SavedRoot1 = root;
+	auto ReadinToken1 = lex->readNextToken();
+	if (ReadinToken1.id == LEX_STRING) {
+		root = shared_ptr<Node>(new IDNode(ReadinToken1.name));
+		return 1;
+	}
+	lex->setNowPos(SavedLexPos1);
+	root = SavedRoot1;
+	return 0;
+}
+
 bool parseExpr() {
 	auto SavedLexPos1 = lex->getNowPos();
 	auto SavedRoot1 = root;

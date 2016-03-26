@@ -32,5 +32,6 @@ extern int SSystem;
 extern int Sconstructor;
 extern int Sx;
 extern int SHttpRequest;
+extern int SNetwork;
 
 #endif

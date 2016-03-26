@@ -1,3 +1,3 @@
 {
-	System.print(HttpRequest);
+	System.print(HttpRequest.GET);
 }

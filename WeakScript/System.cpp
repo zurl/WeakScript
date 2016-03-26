@@ -34,10 +34,17 @@ void initSysFunc() {
 	//add system;
 	NowVarTable->defineVar(SSystem);
 	NowVarTable->getVar(SSystem) = new Object();
-
+	NowVarTable->defineVar(SNetwork);
+	NowVarTable->getVar(SNetwork) = new Object();
 	addSysFunc(SSystem,"print", { "x" }, []() {
 		// Value print(x)
 		cout << NowVarTable->getVar(Sx);
+		throw ReturnException();
+		return Value();
+	});
+	addSysFunc(SSystem, "println", {}, []() {
+		// Value print(x)
+		cout << endl;
 		throw ReturnException();
 		return Value();
 	});
@@ -65,6 +72,14 @@ void initSysFunc() {
 	});
 	addSysFunc(SSystem, "exit", {}, []() {
 		exit(0);
+		return Value();
+	});
+	addSysFunc(SNetwork, "sendHTMLHeader", {}, []() {
+		cout << "SENDHTML" << "%%%%%%";
+		return Value();
+	});
+	addSysFunc(SNetwork, "sendJSONHeader", {}, []() {
+		cout  << "SENDJSON" << "%%%%%%";
 		return Value();
 	});
 }
