@@ -28,8 +28,29 @@ bool FileInput() {
 
 extern ostream & operator<< (ostream &, const Value &);
 
+Value evalString(string str) {
+	Lex * savedLex = lex;
+	lex = new Lex(0, str);
+	if (parseStmt()) {
+		try {
+			auto x = root->eval();
+			if (dynamic_pointer_cast<SimpleNode>(root) != nullptr) {
+				lex = savedLex;
+				return x;
+			}
+		}
+		catch (MyExpection &e) {
+			cout << e.getErrorMessage() << endl;
+		}lex = savedLex;
+		return Value();
+	}
+	else {
+		cout << "Illeagl code." << endl; lex = savedLex;
+		return Value();
+	}
+}
 
-string info = "WeakScript 0.6.0 stable on win32\nCopyright 2015-2016 zcy. All Rights Reserved\nThis project is under the MIT license: http://www.opensource.org/licenses/mit-license.php\n";
+string info = "WeakScript 0.8.2 stable on win32\nCopyright 2015-2016 zcy. All Rights Reserved\nThis project is under the MIT license: http://www.opensource.org/licenses/mit-license.php\n";
 bool InterInput() {
 	string code;
 	

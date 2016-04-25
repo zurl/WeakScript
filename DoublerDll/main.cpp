@@ -2,7 +2,7 @@
 #include "WsExport.h"
 
 
-__declspec(dllexport) void getModuleFuncCnt(int * ret) {
+__declspec(dllexport) void getFuncCnt(int * ret) {
 	*ret = 1;
 }
 __declspec(dllexport) void getFunc(int id, ExportSysFunc * ret) {

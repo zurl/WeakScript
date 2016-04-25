@@ -184,7 +184,7 @@ bool Lex::loadToken() {
 }
 string retstr(string a) {
 	string ret ="";
-	for (int i = 1; i <= a.length() - 2; i++)ret += a[i];
+	for (unsigned  i = 1; i <= a.length() - 2; i++)ret += a[i];
 	return ret;
 }
 void Lex::acceptToken(int id, string &name){

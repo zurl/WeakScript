@@ -446,10 +446,31 @@ string ILvalue::getName() {
 	return "";
 }
 Value & SonNode::get() {
+	//String;
 	auto t = std::dynamic_pointer_cast<ILvalue>(this->left);
-	if (t == nullptr)
+	if (t == nullptr) {
+		
 		throw UnexpectRunTimeException();
+
+	}
 	auto var = t->get();
+	if (var.type == Value::Type::Str) {
+		auto ret = this->right->eval();
+		if (ret.type == Value::Type::Int) {
+			if (ret.data.Int >= var.data.Str->length()) {
+				return *new Value(string(""));
+			}
+			else {
+				char ch = (*var.data.Str)[ret.data.Int];
+				char *str = (char *)malloc(sizeof(char)*2);
+				str[0] = ch; str[1] = 0;
+				return * new Value(string(str));
+			}
+		}
+		else {
+			throw UnableUseSonOperatorException();
+		}
+	}
 	if (var.type != Value::Type::Obj && var.type != Value::Type::Func)
 		throw UnableUseSonOperatorException();
 	auto r = std::dynamic_pointer_cast<IDNode>(this->right);

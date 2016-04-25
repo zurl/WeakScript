@@ -52,6 +52,7 @@ void addSysFunc(int obj, string nameO, vector<string> args, SysFunc func) {
 }
 #include "WsExport.h"
 
+Value evalString(string str);
 typedef void(*GcFunc)(int *);
 typedef void(*GfFunc)(int, ExportSysFunc *);
 #include <windows.h>
@@ -60,7 +61,7 @@ void initSysFunc() {
 	GcFunc getFuncCnt; GfFunc getFunc;
 	HINSTANCE hdll;
 	hdll = LoadLibrary("D:\\DataBase\\VSCODE\\WeakScript\\Release\\DoublerDll.dll");
-	getFuncCnt = (GcFunc)GetProcAddress(hdll, "?getModuleFuncCnt@@YAXPAH@Z");
+	getFuncCnt = (GcFunc)GetProcAddress(hdll, "?getFuncCnt@@YAXPAH@Z");
 	getFunc = (GfFunc)GetProcAddress(hdll, "?getFunc@@YAXHPAUExportSysFunc@@@Z");
 	int cnt = 0;
 	getFuncCnt(&cnt);
@@ -86,6 +87,11 @@ void initSysFunc() {
 		// Value print(x)
 		cout << endl;
 		throw ReturnException();
+		return Value();
+	});
+	addSysFunc(SSystem, "eval", {"x"}, []() {
+		// Value print(x)
+		throw ReturnException(evalString(*NowVarTable->getVar(Sx).data.Str));
 		return Value();
 	});
 	addSysFunc(SSystem, "readint", {}, []() {
