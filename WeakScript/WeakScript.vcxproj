@@ -78,6 +78,7 @@
     <ClInclude Include="eval.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="parser.h" />
+    <ClInclude Include="WsExport.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="test.ws" />

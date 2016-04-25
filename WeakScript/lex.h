@@ -94,4 +94,4 @@ private:
 public:
 	int AcceptId(string id);
 };
-#endif
+#endif	

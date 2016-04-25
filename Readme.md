@@ -1,11 +1,20 @@
-WeakScirpt -- A JavaScript-like Interpreter  
+# WeakScirpt -- A JavaScript-like Interpreter  
+
+0.For visitors:
+
+This project is planning to be refactored.
+We will come back with new Specifications.
+like:
+* More clean code.
+* GC
+* Module
     
-1.Introduction:  
+## 1.Introduction:  
 
 This is a project contains WeakScirpt's Interpreter and its util  
 (contains a TokenizerBuilder & a ParserGenerator )  
 
-2.Specification:   
+## 2.Specification:   
 * `Weak-Type`  
 * `Dynamic-Type`  
 * `Interpreted`  
@@ -14,7 +23,7 @@ This is a project contains WeakScirpt's Interpreter and its util
 * `OOP`
 * (Mark-Sweep GC)  
   
-3. Expample
+## 3. Expample
 A program for finding prime numbers.
 ```JavaScript
 {  

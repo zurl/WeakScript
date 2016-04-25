@@ -3,7 +3,7 @@
 #include "eval.h"
 #include "parser.h"
 #include<algorithm>
-
+#include <Windows.h>
 
 extern shared_ptr<Node> root;
 extern bool parseStmt();
@@ -76,8 +76,9 @@ void networkinit(char *begin) {
 		cout << "fuck" << endl;
 	}
 }
-
 int main(int argc, char *argv[]) {
+	
+
 	initConstString();
 	initSysFunc();
 	if (argc == 1) {

@@ -422,6 +422,13 @@ Value ArguNode::eval() {
 	return Value();
 }
 
+ModuleFuncNode::ModuleFuncNode(ExportSysFunc * x)
+	:func(x) {}
+void ModuleFuncNode::visit(int x) {
+	for (int i = 1; i <= x; i++)printf("    ");
+	cout << "ModuleFuncNode Node" << endl;
+	this->visitson(x + 1);
+}
 SysFuncNode::SysFuncNode(SysFunc x)
 	:func(x) {}
 void SysFuncNode::visit(int x) {
@@ -638,3 +645,11 @@ Value NewFuncCallNode::eval() {
 	return ttmp;
 }
 
+Value ModuleFuncNode::eval() {
+	Value * argv = (Value *)malloc(sizeof(Value) * func->argc);
+	for (int i = 0; i <= func->argc - 1; i++)
+		argv[i] = NowVarTable->getVar(EncodeString(func->argv[i]));
+	Value ret = func->func(func->argc,argv);
+	throw ReturnException(ret);
+	return Value();
+}

@@ -16,6 +16,14 @@ public:
 	void visitson(int x);
 	virtual void del();
 };
+#include "WsExport.h"
+class ModuleFuncNode : public UnitNode {
+public:
+	ExportSysFunc * func;
+	ModuleFuncNode(ExportSysFunc* x);
+	virtual void visit(int x);
+	virtual Value eval();
+};
 class SysFuncNode : public UnitNode {
 public:
 	SysFunc func;

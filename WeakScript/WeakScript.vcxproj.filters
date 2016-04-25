@@ -53,6 +53,9 @@
     <ClInclude Include="eval.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="WsExport.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="test.ws">

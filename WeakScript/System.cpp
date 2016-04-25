@@ -8,7 +8,27 @@ extern shared_ptr<VariableTable> NowVarTable;
 extern int EncodeString(string);
 extern int Sx;
 extern int SSystem;
+void addModuleFunc(int obj,ExportSysFunc * func) {
+	auto space = NowVarTable->getVar(obj).data.Obj;
 
+	auto name = EncodeString(func->name);
+	shared_ptr<Node> arugs;
+	//null;
+	if (func->argc == 0)arugs = shared_ptr<Node>(new NullNode());
+	//one
+	else if (func->argc == 1) arugs = shared_ptr<Node>(new IDNode(func->argv[0]));
+	//more
+	else {
+		arugs = shared_ptr<Node>(new ArguDefNode(
+			shared_ptr<Node>(new IDNode(func->argv[0])),
+			shared_ptr<Node>(new IDNode(func->argv[1]))));
+		for (unsigned i = 2; i <= func->argc - 1; i++) {
+			arugs = shared_ptr<Node>(new ArguDefNode(arugs, shared_ptr<Node>(new IDNode(func->argv[i]))));
+		}
+	}
+	space->getVar(name).type = Value::Type::Func;
+	space->getVar(name).data.Func = new Function(new FuncDefNode(arugs, shared_ptr<Node>(new ModuleFuncNode(func))));
+}
 void addSysFunc(int obj, string nameO, vector<string> args, SysFunc func) {
 	auto space = NowVarTable->getVar(obj).data.Obj;
 	
@@ -30,12 +50,32 @@ void addSysFunc(int obj, string nameO, vector<string> args, SysFunc func) {
 	space->getVar(name).type = Value::Type::Func;
 	space->getVar(name).data.Func = new Function(new FuncDefNode(arugs, shared_ptr<Node>(new SysFuncNode(func))));
 }
+#include "WsExport.h"
+
+typedef void(*GcFunc)(int *);
+typedef void(*GfFunc)(int, ExportSysFunc *);
+#include <windows.h>
 void initSysFunc() {
 	//add system;
+	GcFunc getFuncCnt; GfFunc getFunc;
+	HINSTANCE hdll;
+	hdll = LoadLibrary("D:\\DataBase\\VSCODE\\WeakScript\\Release\\DoublerDll.dll");
+	getFuncCnt = (GcFunc)GetProcAddress(hdll, "?getModuleFuncCnt@@YAXPAH@Z");
+	getFunc = (GfFunc)GetProcAddress(hdll, "?getFunc@@YAXHPAUExportSysFunc@@@Z");
+	int cnt = 0;
+	getFuncCnt(&cnt);
+	DWORD ttt = GetLastError();
+
+	ExportSysFunc * tmp = new ExportSysFunc();
+	getFunc(0, tmp);
 	NowVarTable->defineVar(SSystem);
 	NowVarTable->getVar(SSystem) = new Object();
 	NowVarTable->defineVar(SNetwork);
 	NowVarTable->getVar(SNetwork) = new Object();
+
+	addModuleFunc(SSystem, tmp);
+
+//	addSysFunc(SSystem, nname, *nv, tmp->func);
 	addSysFunc(SSystem,"print", { "x" }, []() {
 		// Value print(x)
 		cout << NowVarTable->getVar(Sx);

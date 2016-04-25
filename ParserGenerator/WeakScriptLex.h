@@ -1,4 +1,4 @@
-//// Weak Script Lexical Analysis Engine
+	//// Weak Script Lexical Analysis Engine
 //// Lexical Defination File
 //// For c99 / c++11
 const int LEX_ID = 1 ;
@@ -39,3 +39,4 @@ const int LEX_SPACE = 35 ;
 const int LEX_NL = 36 ;
 const int LEX_TAB = 37 ;
 
+                         
